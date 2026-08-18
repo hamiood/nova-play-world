@@ -1,1249 +1,541 @@
-const tg = window.Telegram?.WebApp;
-
-if(tg){
-  tg.ready();
-  tg.expand();
-}
-
 const $ = id => document.getElementById(id);
 
-let points = Number(localStorage.getItem("nova_points") || 0);
-let bestScore = Number(localStorage.getItem("nova_best") || 0);
-let gems = Number(localStorage.getItem("nova_gems") || 0);
-let streak = Number(localStorage.getItem("nova_streak") || 0);
+const canvas = $("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-let canvas;
-let ctx;
-let raf = 0;
-let last = 0;
+let best = Number(localStorage.getItem("nova_best") || 0);
+let totalCrystals = Number(localStorage.getItem("nova_crystals") || 0);
 
-const game = {
-  running:false,
-  score:0,
-  crystals:0,
-  combo:1,
-  shield:1,
-  time:0,
-  spawn:0,
-  crystalSpawn:0,
-  difficulty:1,
-  player:{
-    x:0,
-    y:0,
-    targetX:0
-  },
-  meteors:[],
-  crystalsList:[],
-  particles:[],
-  stars:[]
+$("bestScore").textContent = best.toLocaleString();
+$("totalCrystals").textContent = totalCrystals.toLocaleString();
+
+let W = 0;
+let H = 0;
+
+let playing = false;
+let animation = 0;
+let lastTime = 0;
+
+let score = 0;
+let crystals = 0;
+let shield = 1;
+let elapsed = 0;
+
+let ship = {
+  x: 0,
+  y: 0,
+  targetX: 0
 };
 
+let meteors = [];
+let gems = [];
+let particles = [];
+let stars = [];
 
-function save(){
+function resizeGame(){
 
-  localStorage.setItem(
-    "nova_points",
-    points
-  );
+  const rect = canvas.getBoundingClientRect();
 
-  localStorage.setItem(
-    "nova_best",
-    bestScore
-  );
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-  localStorage.setItem(
-    "nova_gems",
-    gems
-  );
+  W = rect.width;
+  H = rect.height;
 
-  localStorage.setItem(
-    "nova_streak",
-    streak
-  );
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
 
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  ship.y = H - 75;
+
+  if(!playing){
+    ship.x = W / 2;
+    ship.targetX = W / 2;
+  }
 }
 
-
-function updateHome(){
-
-  $("points").textContent =
-    points.toLocaleString();
-
-  $("bestScore").textContent =
-    bestScore.toLocaleString();
-
-  $("gems").textContent =
-    gems.toLocaleString();
-
-  $("streak").textContent =
-    streak;
-
-  const xp =
-    points % 1000;
-
-  $("xpFill").style.width =
-    Math.max(5,xp/10)+"%";
-
-  $("xpText").textContent =
-    `${xp} / 1000 XP`;
-
-}
-
-
-function showHome(){
-
-  stopGame();
-
-  $("homeScreen").classList.remove("hidden");
-  $("gameScreen").classList.add("hidden");
-
-}
-
+window.addEventListener("resize", resizeGame);
 
 function openGame(){
 
-  $("homeScreen").classList.add("hidden");
+  $("app").classList.add("hidden");
   $("gameScreen").classList.remove("hidden");
 
-  initCanvas();
-
+  requestAnimationFrame(() => {
+    resizeGame();
+    createStars();
+  });
 }
-
 
 function closeGame(){
 
-  stopGame();
+  playing = false;
+
+  if(animation){
+    cancelAnimationFrame(animation);
+  }
 
   $("gameScreen").classList.add("hidden");
-  $("homeScreen").classList.remove("hidden");
-
+  $("app").classList.remove("hidden");
 }
 
+$("playBtn").addEventListener("click", openGame);
+$("missionBtn").addEventListener("click", openGame);
+$("backBtn").addEventListener("click", closeGame);
 
-function openProfile(){
+$("launchBtn").addEventListener("click", startGame);
+$("retryBtn").addEventListener("click", startGame);
 
-  $("profilePoints").textContent =
-    points.toLocaleString();
+canvas.addEventListener("pointerdown", moveShip);
+canvas.addEventListener("pointermove", moveShip);
 
-  $("profileBest").textContent =
-    bestScore.toLocaleString();
+function moveShip(event){
 
-  $("profileModal").classList.remove(
-    "hidden"
-  );
+  if(!playing) return;
 
-}
+  const rect = canvas.getBoundingClientRect();
 
-
-function closeProfile(){
-
-  $("profileModal").classList.add(
-    "hidden"
-  );
-
-}
-
-
-function comingSoon(){
-
-  if(tg?.showPopup){
-
-    tg.showPopup({
-      title:"NOVA",
-      message:"This feature is coming soon 🚀",
-      buttons:[
-        {type:"ok"}
-      ]
-    });
-
-  }else{
-
-    alert(
-      "This feature is coming soon 🚀"
-    );
-
-  }
-
-}
-
-
-function initCanvas(){
-
-  if(!canvas){
-
-    canvas =
-      $("gameCanvas");
-
-    ctx =
-      canvas.getContext("2d");
-
-    canvas.addEventListener(
-      "pointermove",
-      pointerMove
-    );
-
-    canvas.addEventListener(
-      "pointerdown",
-      pointerMove
-    );
-
-    window.addEventListener(
-      "resize",
-      resize
-    );
-
-  }
-
-  resize();
-
-  if(
-    game.stars.length === 0
-  ){
-
-    for(let i=0;i<90;i++){
-
-      game.stars.push({
-        x:Math.random(),
-        y:Math.random(),
-        z:Math.random()
-      });
-
-    }
-
-  }
-
-}
-
-
-function resize(){
-
-  if(!canvas) return;
-
-  const rect =
-    canvas.getBoundingClientRect();
-
-  const dpr =
+  ship.targetX = Math.max(
+    28,
     Math.min(
-      window.devicePixelRatio || 1,
-      2
-    );
-
-  canvas.width =
-    rect.width*dpr;
-
-  canvas.height =
-    rect.height*dpr;
-
-  ctx.setTransform(
-    dpr,0,0,dpr,0,0
+      W - 28,
+      event.clientX - rect.left
+    )
   );
+}
 
-  if(!game.running){
+function createStars(){
 
-    game.player.x =
-      rect.width/2;
+  stars = [];
 
-    game.player.y =
-      rect.height-80;
+  for(let i=0;i<110;i++){
 
-    game.player.targetX =
-      game.player.x;
-
+    stars.push({
+      x:Math.random()*W,
+      y:Math.random()*H,
+      size:.5+Math.random()*1.5,
+      speed:.2+Math.random()*.8,
+      alpha:.2+Math.random()*.7
+    });
   }
-
 }
-
-
-function pointerMove(e){
-
-  if(!game.running) return;
-
-  const rect =
-    canvas.getBoundingClientRect();
-
-  game.player.targetX =
-    Math.max(
-      30,
-      Math.min(
-        rect.width-30,
-        e.clientX-rect.left
-      )
-    );
-
-}
-
 
 function startGame(){
 
-  initCanvas();
+  resizeGame();
 
-  const width =
-    canvas.clientWidth;
+  playing = true;
+  score = 0;
+  crystals = 0;
+  shield = 1;
+  elapsed = 0;
 
-  const height =
-    canvas.clientHeight;
+  meteors = [];
+  gems = [];
+  particles = [];
 
-  game.running=true;
-  game.score=0;
-  game.crystals=0;
-  game.combo=1;
-  game.shield=1;
-  game.time=0;
-  game.spawn=0;
-  game.crystalSpawn=0;
-  game.difficulty=1;
+  ship.x = W/2;
+  ship.targetX = W/2;
+  ship.y = H-75;
 
-  game.meteors=[];
-  game.crystalsList=[];
-  game.particles=[];
+  $("score").textContent = "0";
+  $("crystals").textContent = "0";
+  $("shield").textContent = "●";
 
-  game.player.x =
-    width/2;
+  $("startOverlay").classList.add("hidden");
+  $("gameOver").classList.add("hidden");
 
-  game.player.targetX =
-    width/2;
+  lastTime = performance.now();
 
-  game.player.y =
-    height-80;
-
-  $("gameScore").textContent="0";
-  $("gameCombo").textContent="x1";
-  $("gameShield").textContent="●";
-
-  $("startOverlay").classList.add(
-    "hidden"
-  );
-
-  $("gameOver").classList.add(
-    "hidden"
-  );
-
-  last =
-    performance.now();
-
-  cancelAnimationFrame(raf);
-
-  raf =
-    requestAnimationFrame(loop);
-
+  animation = requestAnimationFrame(loop);
 }
-
-
-function stopGame(){
-
-  game.running=false;
-
-  cancelAnimationFrame(raf);
-
-}
-
 
 function loop(now){
 
-  if(!game.running) return;
+  if(!playing) return;
 
-  const dt =
-    Math.min(
-      (now-last)/16.666,
-      2
-    );
+  const dt = Math.min((now-lastTime)/16.67,2);
 
-  last=now;
+  lastTime = now;
 
   update(dt);
-
   draw();
 
-  raf =
-    requestAnimationFrame(loop);
-
+  animation = requestAnimationFrame(loop);
 }
-
 
 function update(dt){
 
-  const w =
-    canvas.clientWidth;
+  elapsed += dt / 60;
 
-  const h =
-    canvas.clientHeight;
+  ship.x += (ship.targetX-ship.x) * .16 * dt;
 
-  game.time +=
-    dt/60;
+  for(const star of stars){
 
-  game.difficulty =
-    1 +
-    game.time*0.045;
+    star.y += star.speed * dt;
 
-  // Smooth player movement
+    if(star.y > H){
+      star.y = 0;
+      star.x = Math.random()*W;
+    }
+  }
 
-  game.player.x +=
-    (
-      game.player.targetX -
-      game.player.x
-    ) *
-    0.18 *
-    dt;
-
-
-  // Meteor spawning
-
-  game.spawn -= dt;
-
-  if(game.spawn<=0){
-
+  if(Math.random() < (.025 + elapsed*.0007)*dt){
     spawnMeteor();
-
-    game.spawn =
-      Math.max(
-        11,
-        32 -
-        game.difficulty*3
-      );
-
   }
 
-
-  // Crystal spawning
-
-  game.crystalSpawn -= dt;
-
-  if(game.crystalSpawn<=0){
-
-    spawnCrystal();
-
-    game.crystalSpawn =
-      65;
-
+  if(Math.random() < .012*dt){
+    spawnGem();
   }
 
+  for(let i=meteors.length-1;i>=0;i--){
 
-  // Update meteors
+    const m = meteors[i];
 
-  for(
-    let i=game.meteors.length-1;
-    i>=0;
-    i--
-  ){
+    m.y += m.speed * (1 + elapsed*.035) * dt;
+    m.rotation += m.spin * dt;
 
-    const m =
-      game.meteors[i];
+    if(distance(m.x,m.y,ship.x,ship.y) < m.radius+20){
 
-    m.y +=
-      m.speed *
-      game.difficulty *
-      dt;
+      if(shield){
 
-    m.rotation +=
-      m.spin*dt;
+        shield = 0;
 
-    const d =
-      Math.hypot(
-        m.x-game.player.x,
-        m.y-game.player.y
-      );
+        $("shield").textContent = "○";
 
-    if(
-      d <
-      m.radius+18
-    ){
+        burst(ship.x,ship.y,"#4eeaff",25);
 
-      if(game.shield){
-
-        game.shield=0;
-
-        $("gameShield").textContent="○";
-
-        explode(
-          game.player.x,
-          game.player.y,
-          "#5deaff",
-          22
-        );
-
-        game.meteors.splice(i,1);
-
-        vibrate([25,40,25]);
+        meteors.splice(i,1);
 
         continue;
 
+      }else{
+
+        gameOver();
+        return;
       }
-
-      endGame();
-
-      return;
-
     }
 
-    if(
-      m.y >
-      h+80
-    ){
-
-      game.meteors.splice(i,1);
-
+    if(m.y > H+80){
+      meteors.splice(i,1);
     }
-
   }
 
+  for(let i=gems.length-1;i>=0;i--){
 
-  // Update crystals
+    const g = gems[i];
 
-  for(
-    let i=game.crystalsList.length-1;
-    i>=0;
-    i--
-  ){
+    g.y += g.speed * (1+elapsed*.02) * dt;
+    g.rotation += .04*dt;
 
-    const c =
-      game.crystalsList[i];
+    if(distance(g.x,g.y,ship.x,ship.y)<32){
 
-    c.y +=
-      c.speed *
-      game.difficulty *
-      dt;
+      crystals++;
+      totalCrystals++;
 
-    c.angle +=
-      .04*dt;
+      score += 50;
 
-    const d =
-      Math.hypot(
-        c.x-game.player.x,
-        c.y-game.player.y
-      );
+      $("crystals").textContent = crystals;
 
-    if(d<34){
+      burst(g.x,g.y,"#54efff",18);
 
-      game.crystals++;
+      gems.splice(i,1);
 
-      gems++;
-
-      game.combo =
-        Math.min(
-          9,
-          game.combo+1
-        );
-
-      game.score +=
-        25*game.combo;
-
-      $("gameCombo").textContent =
-        "x"+game.combo;
-
-      $("gameScore").textContent =
-        Math.floor(
-          game.score
-        );
-
-      explode(
-        c.x,
-        c.y,
-        "#61efff",
-        14
-      );
-
-      game.crystalsList.splice(i,1);
-
-      vibrate(12);
-
+      continue;
     }
 
-    if(c.y>h+50){
-
-      game.crystalsList.splice(i,1);
-
-      game.combo=1;
-
-      $("gameCombo").textContent="x1";
-
+    if(g.y>H+50){
+      gems.splice(i,1);
     }
-
   }
 
+  score += .18 * dt * (1+elapsed*.03);
 
-  // Survival points
+  $("score").textContent = Math.floor(score).toLocaleString();
 
-  game.score +=
-    .12 *
-    game.difficulty *
-    dt;
+  for(let i=particles.length-1;i>=0;i--){
 
-  $("gameScore").textContent =
-    Math.floor(game.score);
+    const p = particles[i];
 
+    p.x += p.vx*dt;
+    p.y += p.vy*dt;
 
-  updateParticles(dt);
+    p.life -= .035*dt;
 
+    if(p.life<=0){
+      particles.splice(i,1);
+    }
+  }
 }
-
 
 function spawnMeteor(){
 
-  const w =
-    canvas.clientWidth;
+  const radius = 15 + Math.random()*19;
 
-  game.meteors.push({
-
-    x:
-      25+
-      Math.random()*
-      (w-50),
-
-    y:-60,
-
-    radius:
-      17+
-      Math.random()*17,
-
-    speed:
-      1.5+
-      Math.random()*1.5,
-
-    rotation:
-      Math.random()*6,
-
-    spin:
-      (Math.random()-.5)*.08,
-
-    hue:
-      Math.random()
-
+  meteors.push({
+    x:radius+Math.random()*(W-radius*2),
+    y:-radius-20,
+    radius,
+    speed:1.4+Math.random()*2.2,
+    rotation:Math.random()*Math.PI,
+    spin:(Math.random()-.5)*.09
   });
-
 }
 
+function spawnGem(){
 
-function spawnCrystal(){
-
-  const w =
-    canvas.clientWidth;
-
-  game.crystalsList.push({
-
-    x:
-      30+
-      Math.random()*
-      (w-60),
-
-    y:-30,
-
-    speed:
-      1.5+
-
-      Math.random(),
-
-    size:11,
-
-    angle:0
-
+  gems.push({
+    x:25+Math.random()*(W-50),
+    y:-25,
+    speed:1.3+Math.random()*1.2,
+    rotation:Math.random()*6
   });
-
 }
 
+function distance(x1,y1,x2,y2){
 
-function explode(
-  x,
-  y,
-  color,
-  amount
-){
+  return Math.hypot(x1-x2,y1-y2);
+}
 
-  for(
-    let i=0;
-    i<amount;
-    i++
-  ){
+function burst(x,y,color,count){
 
-    const angle =
-      Math.random()*
-      Math.PI*2;
+  for(let i=0;i<count;i++){
 
-    const speed =
-      1+
-      Math.random()*5;
+    const angle = Math.random()*Math.PI*2;
+    const speed = 1+Math.random()*5;
 
-    game.particles.push({
-
+    particles.push({
       x,
       y,
-
-      vx:
-        Math.cos(angle)*
-        speed,
-
-      vy:
-        Math.sin(angle)*
-        speed,
-
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed,
       life:1,
-
-      size:
-        1+
-        Math.random()*3,
-
+      size:1+Math.random()*3,
       color
-
     });
-
   }
-
 }
-
-
-function updateParticles(dt){
-
-  for(
-    let i=game.particles.length-1;
-    i>=0;
-    i--
-  ){
-
-    const p =
-      game.particles[i];
-
-    p.x +=
-      p.vx*dt;
-
-    p.y +=
-      p.vy*dt;
-
-    p.vx *= .97;
-    p.vy *= .97;
-
-    p.life -=
-      .035*dt;
-
-    if(p.life<=0){
-
-      game.particles.splice(i,1);
-
-    }
-
-  }
-
-}
-
 
 function draw(){
 
-  const w =
-    canvas.clientWidth;
+  ctx.clearRect(0,0,W,H);
 
-  const h =
-    canvas.clientHeight;
-
-  ctx.clearRect(
-    0,0,w,h
+  const bg = ctx.createRadialGradient(
+    W*.5,
+    H*.35,
+    10,
+    W*.5,
+    H*.5,
+    H
   );
 
+  bg.addColorStop(0,"#18184d");
+  bg.addColorStop(.5,"#080a1d");
+  bg.addColorStop(1,"#02030a");
 
-  // Deep space
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,W,H);
 
-  const bg =
-    ctx.createRadialGradient(
-      w*.5,
-      h*.35,
-      10,
-      w*.5,
-      h*.45,
-      h
-    );
+  drawStars();
 
-  bg.addColorStop(
-    0,
-    "#16153a"
-  );
+  for(const g of gems){
+    drawGem(g);
+  }
 
-  bg.addColorStop(
-    .5,
-    "#080a1b"
-  );
-
-  bg.addColorStop(
-    1,
-    "#02030a"
-  );
-
-  ctx.fillStyle=bg;
-
-  ctx.fillRect(
-    0,0,w,h
-  );
-
-
-  drawStars(w,h);
-
-  drawNebula(w,h);
-
-  game.crystalsList.forEach(
-    drawCrystal
-  );
-
-  game.meteors.forEach(
-    drawMeteor
-  );
+  for(const m of meteors){
+    drawMeteor(m);
+  }
 
   drawParticles();
-
   drawShip();
-
 }
 
+function drawStars(){
 
-function drawStars(w,h){
+  for(const s of stars){
 
-  game.stars.forEach((s,i)=>{
-
-    const speed =
-      .3+
-      s.z*1.4;
-
-    s.y +=
-      .0015*
-      speed*
-      game.difficulty;
-
-    if(s.y>1)
-      s.y=0;
-
-    const x =
-      s.x*w;
-
-    const y =
-      s.y*h;
-
-    const size =
-      .4+
-      s.z*1.5;
-
-    ctx.globalAlpha =
-      .25+
-      s.z*.6;
+    ctx.globalAlpha=s.alpha;
 
     ctx.fillStyle="#fff";
 
     ctx.beginPath();
 
     ctx.arc(
-      x,
-      y,
-      size,
+      s.x,
+      s.y,
+      s.size,
       0,
       Math.PI*2
     );
 
     ctx.fill();
-
-  });
+  }
 
   ctx.globalAlpha=1;
-
 }
-
-
-function drawNebula(w,h){
-
-  const g =
-    ctx.createRadialGradient(
-      w*.25,
-      h*.3,
-      10,
-      w*.25,
-      h*.3,
-      180
-    );
-
-  g.addColorStop(
-    0,
-    "rgba(119,83,255,.18)"
-  );
-
-  g.addColorStop(
-    1,
-    "rgba(119,83,255,0)"
-  );
-
-  ctx.fillStyle=g;
-
-  ctx.fillRect(
-    0,0,w,h
-  );
-
-}
-
 
 function drawMeteor(m){
 
   ctx.save();
 
-  ctx.translate(
-    m.x,
-    m.y
-  );
+  ctx.translate(m.x,m.y);
+  ctx.rotate(m.rotation);
 
-  ctx.rotate(
-    m.rotation
-  );
-
-
-  // Outer glow
-
-  ctx.shadowBlur=25;
-
-  ctx.shadowColor=
-    "rgba(255,92,78,.35)";
-
-
-  // Shape
+  ctx.shadowBlur=20;
+  ctx.shadowColor="#ff694d";
 
   ctx.beginPath();
 
-  const points=11;
+  for(let i=0;i<10;i++){
 
-  for(
-    let i=0;
-    i<points;
-    i++
-  ){
+    const a = i/10*Math.PI*2;
 
-    const a =
-      i/
-      points*
-      Math.PI*2;
+    const r = m.radius * (
+      .82 + Math.sin(i*3.7)*.08 + Math.random()*.06
+    );
 
-    const r =
-      m.radius*
-      (
-        .82+
-        Math.sin(i*4.7)*.09+
-        Math.random()*.08
-      );
+    const x = Math.cos(a)*r;
+    const y = Math.sin(a)*r;
 
-    const x =
-      Math.cos(a)*r;
-
-    const y =
-      Math.sin(a)*r;
-
-    if(i===0)
-      ctx.moveTo(x,y);
-    else
-      ctx.lineTo(x,y);
-
+    if(i===0) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
   }
 
   ctx.closePath();
 
-
-  const rock =
-    ctx.createRadialGradient(
-      -m.radius*.3,
-      -m.radius*.35,
-      2,
-      0,
-      0,
-      m.radius
-    );
-
-  rock.addColorStop(
-    0,
-    "#c5a08f"
-  );
-
-  rock.addColorStop(
-    .45,
-    "#755f62"
-  );
-
-  rock.addColorStop(
+  const gradient = ctx.createRadialGradient(
+    -m.radius*.3,
+    -m.radius*.35,
     1,
-    "#292936"
+    0,
+    0,
+    m.radius
   );
 
-  ctx.fillStyle=rock;
+  gradient.addColorStop(0,"#d5b0a2");
+  gradient.addColorStop(.45,"#706069");
+  gradient.addColorStop(1,"#242433");
 
+  ctx.fillStyle=gradient;
   ctx.fill();
-
-
-  // Craters
 
   ctx.shadowBlur=0;
 
-  for(let i=0;i<4;i++){
+  ctx.fillStyle="#18182488";
 
-    const a =
-      i*1.7;
-
-    const r =
-      m.radius*.35;
-
-    ctx.fillStyle=
-      "rgba(20,18,28,.35)";
+  for(let i=0;i<3;i++){
 
     ctx.beginPath();
 
     ctx.arc(
-      Math.cos(a)*r,
-      Math.sin(a)*r,
+      (Math.random()-.5)*m.radius,
+      (Math.random()-.5)*m.radius,
       m.radius*.12,
       0,
       Math.PI*2
     );
 
     ctx.fill();
-
   }
 
   ctx.restore();
-
 }
 
-
-function drawCrystal(c){
+function drawGem(g){
 
   ctx.save();
 
-  ctx.translate(
-    c.x,
-    c.y
-  );
-
-  ctx.rotate(
-    c.angle
-  );
-
+  ctx.translate(g.x,g.y);
+  ctx.rotate(g.rotation);
 
   ctx.shadowBlur=25;
-
-  ctx.shadowColor="#20eaff";
-
-
-  // Crystal
+  ctx.shadowColor="#43eaff";
 
   ctx.beginPath();
 
-  ctx.moveTo(
-    0,
-    -c.size*1.5
-  );
-
-  ctx.lineTo(
-    c.size,
-    -c.size*.35
-  );
-
-  ctx.lineTo(
-    c.size*.55,
-    c.size*1.2
-  );
-
-  ctx.lineTo(
-    -c.size*.55,
-    c.size*1.2
-  );
-
-  ctx.lineTo(
-    -c.size,
-    -c.size*.35
-  );
-
+  ctx.moveTo(0,-18);
+  ctx.lineTo(12,-5);
+  ctx.lineTo(7,14);
+  ctx.lineTo(-7,14);
+  ctx.lineTo(-12,-5);
   ctx.closePath();
 
+  const gradient = ctx.createLinearGradient(0,-18,0,15);
 
-  const crystal =
-    ctx.createLinearGradient(
-      0,
-      -20,
-      0,
-      20
-    );
+  gradient.addColorStop(0,"#ffffff");
+  gradient.addColorStop(.3,"#a4f9ff");
+  gradient.addColorStop(.65,"#25ddff");
+  gradient.addColorStop(1,"#6958ff");
 
-  crystal.addColorStop(
-    0,
-    "#ffffff"
-  );
-
-  crystal.addColorStop(
-    .25,
-    "#a1f8ff"
-  );
-
-  crystal.addColorStop(
-    .6,
-    "#25d9ff"
-  );
-
-  crystal.addColorStop(
-    1,
-    "#5d54ff"
-  );
-
-  ctx.fillStyle=crystal;
-
-  ctx.fill();
-
-
-  // Highlight
-
-  ctx.fillStyle=
-    "rgba(255,255,255,.7)";
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    0,
-    -c.size*1.1
-  );
-
-  ctx.lineTo(
-    c.size*.35,
-    -c.size*.2
-  );
-
-  ctx.lineTo(
-    0,
-    c.size*.45
-  );
-
-  ctx.closePath();
-
+  ctx.fillStyle=gradient;
   ctx.fill();
 
   ctx.restore();
-
 }
-
 
 function drawShip(){
 
-  const x =
-    game.player.x;
-
-  const y =
-    game.player.y;
-
   ctx.save();
 
-  ctx.translate(x,y);
+  ctx.translate(ship.x,ship.y);
 
+  ctx.shadowBlur=25;
+  ctx.shadowColor="#45eaff";
 
-  // Engine trail
+  const flame = ctx.createLinearGradient(0,8,0,45);
 
-  const flame =
-    ctx.createLinearGradient(
-      0,
-      12,
-      0,
-      48
-    );
-
-  flame.addColorStop(
-    0,
-    "#ffffff"
-  );
-
-  flame.addColorStop(
-    .3,
-    "#2de7ff"
-  );
-
-  flame.addColorStop(
-    1,
-    "rgba(91,69,255,0)"
-  );
+  flame.addColorStop(0,"#fff");
+  flame.addColorStop(.3,"#4eeaff");
+  flame.addColorStop(1,"transparent");
 
   ctx.fillStyle=flame;
 
   ctx.beginPath();
 
-  ctx.moveTo(-7,10);
+  ctx.moveTo(-7,8);
   ctx.lineTo(0,48);
-  ctx.lineTo(7,10);
+  ctx.lineTo(7,8);
   ctx.closePath();
 
   ctx.fill();
-
-
-  // Ship glow
-
-  ctx.shadowBlur=28;
-
-  ctx.shadowColor=
-    "#32dcff";
-
-
-  // Main hull
 
   ctx.beginPath();
 
-  ctx.moveTo(
-    0,
-    -28
+  ctx.moveTo(0,-30);
+  ctx.bezierCurveTo(
+    13,-14,
+    19,5,
+    14,18
   );
+
+  ctx.lineTo(0,12);
+  ctx.lineTo(-14,18);
 
   ctx.bezierCurveTo(
-    12,-14,
-    20,3,
-    15,18
-  );
-
-  ctx.lineTo(
-    0,12
-  );
-
-  ctx.lineTo(
-    -15,18
-  );
-
-  ctx.bezierCurveTo(
-    -20,3,
-    -12,-14,
-    0,-28
+    -19,5,
+    -13,-14,
+    0,-30
   );
 
   ctx.closePath();
 
+  const hull = ctx.createLinearGradient(0,-30,0,20);
 
-  const hull =
-    ctx.createLinearGradient(
-      0,-30,
-      0,20
-    );
-
-  hull.addColorStop(
-    0,
-    "#ffffff"
-  );
-
-  hull.addColorStop(
-    .28,
-    "#82f2ff"
-  );
-
-  hull.addColorStop(
-    .65,
-    "#6d65ff"
-  );
-
-  hull.addColorStop(
-    1,
-    "#292b73"
-  );
+  hull.addColorStop(0,"#ffffff");
+  hull.addColorStop(.3,"#8ff7ff");
+  hull.addColorStop(.7,"#675fff");
+  hull.addColorStop(1,"#25276e");
 
   ctx.fillStyle=hull;
-
   ctx.fill();
 
-
-  // Cockpit
-
-  ctx.shadowBlur=10;
+  ctx.fillStyle="#e9ffff";
 
   ctx.beginPath();
 
   ctx.ellipse(
     0,
-    -7,
+    -8,
     6,
     10,
     0,
@@ -1251,94 +543,38 @@ function drawShip(){
     Math.PI*2
   );
 
-  const cockpit =
-    ctx.createLinearGradient(
-      0,-17,
-      0,3
-    );
-
-  cockpit.addColorStop(
-    0,
-    "#ffffff"
-  );
-
-  cockpit.addColorStop(
-    1,
-    "#00bce8"
-  );
-
-  ctx.fillStyle=cockpit;
-
   ctx.fill();
 
+  if(shield){
 
-  // Wings
-
-  ctx.fillStyle="#393da2";
-
-  ctx.beginPath();
-
-  ctx.moveTo(-9,2);
-  ctx.lineTo(-26,17);
-  ctx.lineTo(-12,14);
-  ctx.closePath();
-
-  ctx.fill();
-
-  ctx.beginPath();
-
-  ctx.moveTo(9,2);
-  ctx.lineTo(26,17);
-  ctx.lineTo(12,14);
-  ctx.closePath();
-
-  ctx.fill();
-
-
-  // Shield
-
-  if(game.shield){
-
-    ctx.shadowBlur=16;
-
-    ctx.shadowColor="#36eaff";
-
-    ctx.strokeStyle=
-      "rgba(70,235,255,.5)";
-
+    ctx.strokeStyle="#4eeaff66";
     ctx.lineWidth=1.5;
+    ctx.shadowBlur=20;
 
     ctx.beginPath();
 
     ctx.arc(
       0,
       0,
-      32,
+      33,
       0,
       Math.PI*2
     );
 
     ctx.stroke();
-
   }
 
-
   ctx.restore();
-
 }
-
 
 function drawParticles(){
 
-  game.particles.forEach(p=>{
+  for(const p of particles){
 
-    ctx.globalAlpha =
-      Math.max(0,p.life);
+    ctx.globalAlpha=Math.max(0,p.life);
 
     ctx.fillStyle=p.color;
-
-    ctx.shadowBlur=12;
-
+    ctx.shadowBlur=10;
     ctx.shadowColor=p.color;
 
     ctx.beginPath();
@@ -1352,76 +588,40 @@ function drawParticles(){
     );
 
     ctx.fill();
-
-  });
+  }
 
   ctx.globalAlpha=1;
   ctx.shadowBlur=0;
-
 }
 
+function gameOver(){
 
-function endGame(){
+  playing=false;
 
-  game.running=false;
-
-  cancelAnimationFrame(raf);
-
-  const final =
-    Math.floor(game.score);
-
-  if(final>bestScore){
-
-    bestScore=final;
-
+  if(animation){
+    cancelAnimationFrame(animation);
   }
 
-  const reward =
-    Math.max(
-      5,
-      Math.floor(
-        final*.12+
-        game.crystals*15
-      )
-    );
+  const finalScore=Math.floor(score);
 
-  points += reward;
-
-  $("finalScore").textContent =
-    final.toLocaleString();
-
-  $("finalGems").textContent =
-    game.crystals;
-
-  $("finalReward").textContent =
-    "+"+reward;
-
-  $("gameOver").classList.remove(
-    "hidden"
-  );
-
-  save();
-
-  updateHome();
-
-  vibrate([
-    50,
-    50,
-    100
-  ]);
-
-}
-
-
-function vibrate(pattern){
-
-  if(navigator.vibrate){
-
-    navigator.vibrate(pattern);
-
+  if(finalScore>best){
+    best=finalScore;
   }
 
+  localStorage.setItem("nova_best",best);
+  localStorage.setItem("nova_crystals",totalCrystals);
+
+  $("bestScore").textContent=best.toLocaleString();
+  $("totalCrystals").textContent=totalCrystals.toLocaleString();
+
+  $("finalScore").textContent=finalScore.toLocaleString();
+  $("finalCrystals").textContent=crystals;
+
+  $("gameOver").classList.remove("hidden");
 }
 
-
-updateHome();
+$("gameScreen").addEventListener("touchmove",function(e){
+  if(e.target===canvas){
+    e.preventDefault();
+  }
+},{passive:false});
