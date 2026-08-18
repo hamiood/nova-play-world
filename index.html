@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"
->
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no">
 
 <title>NOVA PLAY</title>
 
@@ -17,7 +16,6 @@ content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no
 <link rel="stylesheet" href="style.css">
 
 </head>
-
 
 <body>
 
@@ -31,10 +29,9 @@ content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no
 <div class="content">
 
 
-<!-- ================= HOME ================= -->
+<!-- HOME -->
 
 <div id="homeScreen">
-
 
 <div class="topbar">
 
@@ -49,9 +46,6 @@ NOVA<span>PLAY</span>
 </div>
 
 
-
-<!-- HERO -->
-
 <div class="hero">
 
 <div class="hero-title">
@@ -60,8 +54,7 @@ YOUR NOVA JOURNEY
 
 <div
 class="points"
-id="points"
->
+id="points">
 0
 </div>
 
@@ -84,27 +77,24 @@ LEVEL 1 • NOVICE
 
 
 <div class="progress">
-
 <div class="progress-fill"></div>
-
 </div>
 
 
 <button
 class="primary"
-onclick="openGame()"
->
-⚡ PLAY & EARN
+onclick="openGame()">
+
+🚀 PLAY NOVA SURVIVE
+
 </button>
 
 </div>
 
 
-
 <!-- STATS -->
 
 <div class="stats">
-
 
 <div class="stat">
 
@@ -114,8 +104,7 @@ onclick="openGame()"
 
 <div
 class="stat-value"
-id="streak"
->
+id="streak">
 0
 </div>
 
@@ -124,7 +113,6 @@ DAY STREAK
 </div>
 
 </div>
-
 
 
 <div class="stat">
@@ -144,7 +132,6 @@ GLOBAL RANK
 </div>
 
 
-
 <div class="stat">
 
 <div class="stat-icon">
@@ -161,9 +148,7 @@ GEMS
 
 </div>
 
-
 </div>
-
 
 
 <!-- GAMES -->
@@ -181,17 +166,15 @@ EXPLORE
 </div>
 
 
-
 <div class="games">
 
 
 <div
 class="game-card"
-onclick="openGame()"
->
+onclick="openGame()">
 
 <div class="game-icon">
-⚡
+🚀
 </div>
 
 <div class="live">
@@ -199,15 +182,14 @@ LIVE
 </div>
 
 <h3>
-Tap Rush
+NOVA SURVIVE
 </h3>
 
 <p>
-30 second reaction challenge
+Dodge meteors. Collect crystals.
 </p>
 
 </div>
-
 
 
 <div class="game-card">
@@ -217,15 +199,14 @@ Tap Rush
 </div>
 
 <h3>
-Brain Quest
+BRAIN QUEST
 </h3>
 
 <p>
-Test your knowledge
+Challenge your mind.
 </p>
 
 </div>
-
 
 
 <div class="game-card">
@@ -235,36 +216,34 @@ Test your knowledge
 </div>
 
 <h3>
-Perfect Shot
+PERFECT SHOT
 </h3>
 
 <p>
-Hit the target
+Aim. Shoot. Dominate.
 </p>
 
 </div>
-
 
 
 <div class="game-card">
 
 <div class="game-icon">
-🧩
+🏎️
 </div>
 
 <h3>
-Memory
+NEON RACE
 </h3>
 
 <p>
-Remember and win
+Coming soon.
 </p>
 
 </div>
 
 
 </div>
-
 
 
 <!-- MISSIONS -->
@@ -282,24 +261,23 @@ TODAY
 </div>
 
 
-
 <div class="missions">
 
 
 <div class="mission">
 
 <div class="mission-icon">
-🎮
+🚀
 </div>
 
 <div class="mission-info">
 
 <b>
-Play your first game
+Survive your first run
 </b>
 
 <small>
-Complete one Tap Rush
+Play NOVA SURVIVE
 </small>
 
 </div>
@@ -309,7 +287,6 @@ Complete one Tap Rush
 </div>
 
 </div>
-
 
 
 <div class="mission">
@@ -337,7 +314,6 @@ Keep your streak alive
 </div>
 
 
-
 <div class="mission">
 
 <div class="mission-icon">
@@ -351,7 +327,7 @@ Invite a friend
 </b>
 
 <small>
-Bring a new active player
+Bring a new player
 </small>
 
 </div>
@@ -365,120 +341,51 @@ Bring a new active player
 
 </div>
 
-
 </div>
 
 
-
-<!-- ================= GAME ================= -->
+<!-- GAME -->
 
 <div
 id="gameScreen"
-class="screen"
->
-
+class="screen">
 
 <div class="game-top">
 
-
 <button
 class="back"
-onclick="closeGame()"
->
+onclick="closeGame()">
+
 ← BACK
+
 </button>
 
-
 <div
-class="timer"
-id="timer"
->
-30
-</div>
+class="timer">
 
+NOVA
 
 </div>
 
+</div>
 
 
 <div class="section-head">
 
 <h2>
-⚡ TAP RUSH
+🚀 NOVA SURVIVE
 </h2>
 
 <span>
-30 SEC
+SURVIVE & COLLECT
 </span>
 
 </div>
 
 
-
 <div
-class="arena"
 id="arena"
->
-
-<div
-class="target"
-id="target"
-onclick="hitTarget()"
->
-</div>
-
-</div>
-
-
-
-<div class="score">
-
-<small>
-SCORE
-</small>
-
-<strong
-id="score"
->
-0
-</strong>
-
-</div>
-
-
-
-<button
-class="primary"
-id="startButton"
-onclick="startGame()"
->
-START GAME
-</button>
-
-
-
-<div
-class="result"
-id="result"
->
-
-<div class="result-icon">
-🏆
-</div>
-
-<h2>
-ROUND COMPLETE
-</h2>
-
-<p id="resultText">
-</p>
-
-<button
-class="primary"
-onclick="startGame()"
->
-PLAY AGAIN
-</button>
+class="arena">
 
 </div>
 
@@ -489,17 +396,13 @@ PLAY AGAIN
 </div>
 
 
-
-<!-- ================= NAV ================= -->
-
+<!-- NAV -->
 
 <div class="bottom-nav">
 
-
 <button
 class="active"
-onclick="switchTab('home')"
->
+onclick="switchTab('home')">
 
 <div class="nav-icon">
 🏠
@@ -510,10 +413,8 @@ HOME
 </button>
 
 
-
 <button
-onclick="switchTab('games')"
->
+onclick="switchTab('games')">
 
 <div class="nav-icon">
 🎮
@@ -524,10 +425,8 @@ GAMES
 </button>
 
 
-
 <button
-onclick="switchTab('friends')"
->
+onclick="switchTab('friends')">
 
 <div class="nav-icon">
 👥
@@ -538,10 +437,8 @@ FRIENDS
 </button>
 
 
-
 <button
-onclick="switchTab('rank')"
->
+onclick="switchTab('rank')">
 
 <div class="nav-icon">
 🏆
@@ -551,16 +448,13 @@ RANK
 
 </button>
 
-
 </div>
 
 
 </div>
-
 
 
 <script src="app.js"></script>
 
 </body>
-
 </html>
