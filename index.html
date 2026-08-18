@@ -4,457 +4,234 @@
 <meta charset="UTF-8">
 
 <meta name="viewport"
-content="width=device-width,
-initial-scale=1.0,
-maximum-scale=1.0,
-user-scalable=no">
+content="width=device-width, initial-scale=1.0,
+maximum-scale=1.0,user-scalable=no">
+
+<meta name="theme-color" content="#060713">
 
 <title>NOVA PLAY</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
-<div class="bg-orb orb1"></div>
-<div class="bg-orb orb2"></div>
-<div class="bg-orb orb3"></div>
-
+<div class="space-bg"></div>
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
 
 <div class="app">
 
-<div class="content">
+<header class="topbar">
 
-
-<!-- HOME -->
-
-<div id="homeScreen">
-
-<div class="topbar">
-
-<div class="logo">
-NOVA<span>PLAY</span>
+<div class="brand">
+<div class="brand-mark">✦</div>
+<div>
+<strong>NOVA<span>PLAY</span></strong>
+<small>PLAY • EARN • COMPETE</small>
+</div>
 </div>
 
-<div class="profile">
-👤
+<button class="avatar" onclick="openProfile()">👤</button>
+
+</header>
+
+
+<main id="homeScreen">
+
+<section class="hero">
+
+<div class="hero-glow"></div>
+
+<div class="eyebrow">
+✦ WELCOME TO NOVA
+</div>
+
+<h1>
+PLAY.<br>
+<span>RISE.</span>
+</h1>
+
+<p>
+Turn every game into progress.
+Climb the ranks and become legendary.
+</p>
+
+<div class="balance">
+
+<div>
+<small>NOVA POINTS</small>
+<strong id="points">0</strong>
+</div>
+
+<div class="level">
+<span>LVL 01</span>
+<div class="xpbar">
+<i id="xpFill"></i>
+</div>
+<small id="xpText">0 / 1000 XP</small>
 </div>
 
 </div>
 
+<button class="main-button" onclick="openGame()">
+<span>🚀</span>
+PLAY NOVA SURVIVE
+<b>›</b>
+</button>
 
-<div class="hero">
+</section>
 
-<div class="hero-title">
-YOUR NOVA JOURNEY
+
+<section class="quick-stats">
+
+<div>
+<span>🔥</span>
+<strong id="streak">0</strong>
+<small>STREAK</small>
 </div>
 
-<div
-class="points"
-id="points">
-0
+<div>
+<span>🏆</span>
+<strong id="bestScore">0</strong>
+<small>BEST</small>
 </div>
 
-<div class="points-label">
-✦ NOVA POINTS
+<div>
+<span>💎</span>
+<strong id="gems">0</strong>
+<small>GEMS</small>
 </div>
 
+</section>
 
-<div class="level-row">
 
-<span>
-LEVEL 1 • NOVICE
-</span>
-
-<span>
-640 / 1000 XP
-</span>
-
+<div class="section-title">
+<div>
+<small>DISCOVER</small>
+<h2>Game Center</h2>
 </div>
-
-
-<div class="progress">
-<div class="progress-fill"></div>
+<span>4 GAMES</span>
 </div>
 
 
-<button
-class="primary"
-onclick="openGame()">
+<section class="games">
 
-🚀 PLAY NOVA SURVIVE
+<button class="game-card featured" onclick="openGame()">
+
+<div class="game-art">
+<div class="planet"></div>
+<div class="mini-ship">🚀</div>
+<div class="star s1">✦</div>
+<div class="star s2">✦</div>
+<div class="star s3">·</div>
+</div>
+
+<div class="game-info">
+<div>
+<small>ARCADE • LIVE</small>
+<h3>NOVA SURVIVE</h3>
+</div>
+<span>PLAY ›</span>
+</div>
 
 </button>
 
+
+<button class="game-card coming">
+
+<div class="coming-icon">🧠</div>
+<small>COMING SOON</small>
+<h3>BRAIN RUSH</h3>
+<p>Think faster. Score higher.</p>
+
+</button>
+
+
+<button class="game-card coming">
+
+<div class="coming-icon">🎯</div>
+<small>COMING SOON</small>
+<h3>AIM MASTER</h3>
+<p>Precision is everything.</p>
+
+</button>
+
+
+<button class="game-card coming">
+
+<div class="coming-icon">🏎️</div>
+<small>COMING SOON</small>
+<h3>NEON RACE</h3>
+<p>Race beyond the limits.</p>
+
+</button>
+
+</section>
+
+
+<div class="section-title">
+<div>
+<small>COMPLETE & EARN</small>
+<h2>Daily Missions</h2>
+</div>
 </div>
 
 
-<!-- STATS -->
-
-<div class="stats">
-
-<div class="stat">
-
-<div class="stat-icon">
-🔥
-</div>
-
-<div
-class="stat-value"
-id="streak">
-0
-</div>
-
-<div class="stat-label">
-DAY STREAK
-</div>
-
-</div>
-
-
-<div class="stat">
-
-<div class="stat-icon">
-🏆
-</div>
-
-<div class="stat-value">
-#—
-</div>
-
-<div class="stat-label">
-GLOBAL RANK
-</div>
-
-</div>
-
-
-<div class="stat">
-
-<div class="stat-icon">
-💎
-</div>
-
-<div class="stat-value">
-0
-</div>
-
-<div class="stat-label">
-GEMS
-</div>
-
-</div>
-
-</div>
-
-
-<!-- GAMES -->
-
-<div class="section-head">
-
-<h2>
-🎮 Game Center
-</h2>
-
-<span>
-EXPLORE
-</span>
-
-</div>
-
-
-<div class="games">
-
-
-<div
-class="game-card"
-onclick="openGame()">
-
-<div class="game-icon">
-🚀
-</div>
-
-<div class="live">
-LIVE
-</div>
-
-<h3>
-NOVA SURVIVE
-</h3>
-
-<p>
-Dodge meteors. Collect crystals.
-</p>
-
-</div>
-
-
-<div class="game-card">
-
-<div class="game-icon">
-🧠
-</div>
-
-<h3>
-BRAIN QUEST
-</h3>
-
-<p>
-Challenge your mind.
-</p>
-
-</div>
-
-
-<div class="game-card">
-
-<div class="game-icon">
-🎯
-</div>
-
-<h3>
-PERFECT SHOT
-</h3>
-
-<p>
-Aim. Shoot. Dominate.
-</p>
-
-</div>
-
-
-<div class="game-card">
-
-<div class="game-icon">
-🏎️
-</div>
-
-<h3>
-NEON RACE
-</h3>
-
-<p>
-Coming soon.
-</p>
-
-</div>
-
-
-</div>
-
-
-<!-- MISSIONS -->
-
-<div class="section-head">
-
-<h2>
-🎯 Daily Missions
-</h2>
-
-<span>
-TODAY
-</span>
-
-</div>
-
-
-<div class="missions">
-
+<section class="missions">
 
 <div class="mission">
-
-<div class="mission-icon">
-🚀
+<div class="mission-icon">🎮</div>
+<div>
+<strong>Play a game</strong>
+<small>Complete one NOVA run</small>
 </div>
-
-<div class="mission-info">
-
-<b>
-Survive your first run
-</b>
-
-<small>
-Play NOVA SURVIVE
-</small>
-
+<b>+250</b>
 </div>
-
-<div class="reward">
-+250
-</div>
-
-</div>
-
 
 <div class="mission">
-
-<div class="mission-icon">
-🎁
+<div class="mission-icon">🎁</div>
+<div>
+<strong>Daily check-in</strong>
+<small>Come back today</small>
 </div>
-
-<div class="mission-info">
-
-<b>
-Daily Check-in
-</b>
-
-<small>
-Keep your streak alive
-</small>
-
+<b>+100</b>
 </div>
-
-<div class="reward">
-+100
-</div>
-
-</div>
-
 
 <div class="mission">
-
-<div class="mission-icon">
-👥
+<div class="mission-icon">💎</div>
+<div>
+<strong>Collect crystals</strong>
+<small>Collect 10 crystals</small>
+</div>
+<b>+150</b>
 </div>
 
-<div class="mission-info">
+</section>
 
-<b>
-Invite a friend
-</b>
-
-<small>
-Bring a new player
-</small>
-
-</div>
-
-<div class="reward">
-+500
-</div>
-
-</div>
-
-
-</div>
-
-</div>
+</main>
 
 
 <!-- GAME -->
 
-<div
-id="gameScreen"
-class="screen">
+<main id="gameScreen" class="game-screen hidden">
 
-<div class="game-top">
+<div class="game-header">
 
-<button
-class="back"
-onclick="closeGame()">
+<button onclick="closeGame()">‹</button>
 
-← BACK
-
-</button>
-
-<div
-class="timer">
-
-NOVA
-
+<div>
+<small>NOVA ARCADE</small>
+<strong>NOVA SURVIVE</strong>
 </div>
+
+<div class="live-dot">● LIVE</div>
 
 </div>
 
 
-<div class="section-head">
+<div class="game-wrap">
 
-<h2>
-🚀 NOVA SURVIVE
-</h2>
-
-<span>
-SURVIVE & COLLECT
-</span>
-
-</div>
-
-
-<div
-id="arena"
-class="arena">
-
-</div>
-
-
-</div>
-
-
-</div>
-
-
-<!-- NAV -->
-
-<div class="bottom-nav">
-
-<button
-class="active"
-onclick="switchTab('home')">
-
-<div class="nav-icon">
-🏠
-</div>
-
-HOME
-
-</button>
-
-
-<button
-onclick="switchTab('games')">
-
-<div class="nav-icon">
-🎮
-</div>
-
-GAMES
-
-</button>
-
-
-<button
-onclick="switchTab('friends')">
-
-<div class="nav-icon">
-👥
-</div>
-
-FRIENDS
-
-</button>
-
-
-<button
-onclick="switchTab('rank')">
-
-<div class="nav-icon">
-🏆
-</div>
-
-RANK
-
-</button>
-
-</div>
-
-
-</div>
-
-
-<script src="app.js"></script>
-
-</body>
-</html>
+<canvas id="
