@@ -515,4 +515,190 @@ button{
 @media(max-width:360px){
   .points{font-size:38px}
   .hero{padding:19px}
+}/* ================= NOVA SURVIVE ================= */
+
+#gameScreen{
+  animation: novaIn .35s ease both;
+}
+
+@keyframes novaIn{
+  from{
+    opacity:0;
+    transform:translateY(12px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+#arena{
+  position:relative;
+  height:430px;
+  overflow:hidden;
+  border-radius:28px;
+  background:#050713;
+  border:1px solid rgba(135,92,255,.3);
+  box-shadow:
+    0 0 50px rgba(90,70,255,.12),
+    inset 0 0 70px rgba(80,60,200,.08);
+}
+
+#novaCanvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  touch-action:none;
+}
+
+.gameHUD{
+  position:absolute;
+  z-index:5;
+  top:14px;
+  left:14px;
+  right:14px;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:10px 13px;
+
+  border-radius:15px;
+
+  background:rgba(5,8,20,.55);
+  border:1px solid rgba(255,255,255,.08);
+
+  backdrop-filter:blur(14px);
+
+  color:#fff;
+
+  font-size:12px;
+  font-weight:800;
+
+  pointer-events:none;
+}
+
+.gameHUD div{
+  min-width:65px;
+}
+
+.gameHUD div:nth-child(2){
+  text-align:center;
+  color:#72efff;
+}
+
+.gameHUD div:nth-child(3){
+  text-align:right;
+}
+
+.gameOverlay{
+  position:absolute;
+  z-index:10;
+  inset:0;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+
+  padding:30px;
+
+  text-align:center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(85,60,190,.28),
+      rgba(3,6,16,.88)
+    );
+
+  backdrop-filter:blur(5px);
+}
+
+.gameOverlay.hidden{
+  display:none;
+}
+
+.bigGameIcon{
+  font-size:62px;
+
+  filter:
+    drop-shadow(0 0 25px rgba(0,220,255,.6));
+
+  animation:
+    floatShip 2s ease-in-out infinite;
+}
+
+@keyframes floatShip{
+  0%,100%{
+    transform:translateY(0) rotate(-2deg);
+  }
+
+  50%{
+    transform:translateY(-10px) rotate(2deg);
+  }
+}
+
+.gameOverlay h2{
+  margin:13px 0 5px;
+
+  font-size:24px;
+  font-weight:900;
+  letter-spacing:-.7px;
+}
+
+.gameOverlay p{
+  margin:0 0 22px;
+
+  max-width:260px;
+
+  color:#8c96b7;
+
+  font-size:11px;
+  line-height:1.6;
+}
+
+.gameOverlay .primary{
+  width:min(260px,100%);
+}
+
+#gameOverOverlay{
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(255,60,150,.16),
+      rgba(3,6,16,.91)
+    );
+}
+
+#gameOverOverlay .bigGameIcon{
+  animation:none;
+}
+
+#finalScore{
+  color:#a5aec9;
+  line-height:2;
+}
+
+#finalScore strong{
+  color:#71eaff;
+}
+
+@media(max-width:380px){
+
+  #arena{
+    height:390px;
+  }
+
+  .gameOverlay h2{
+    font-size:21px;
+  }
+
+  .bigGameIcon{
+    font-size:52px;
+  }
+
 }
