@@ -1,632 +1,696 @@
-const tg = window.Telegram.WebApp;
+const tg = window.Telegram?.WebApp;
 
-try {
+if(tg){
   tg.ready();
   tg.expand();
-} catch(e) {}
-
-let points = Number(localStorage.getItem("nova_points") || 0);
-let streak = Number(localStorage.getItem("nova_streak") || 0);
-
-let game = {
-  running: false,
-  score: 0,
-  crystals: 0,
-  time: 0,
-  playerX: 0,
-  playerY: 0,
-  shield: 0,
-  combo: 0,
-  speed: 2,
-  rocks: [],
-  gems: [],
-  particles: []
-};
-
-let canvas;
-let ctx;
-let animation;
-let lastTime = 0;
+}
 
 const $ = id => document.getElementById(id);
 
-function updateUI() {
-  if ($("points")) $("points").textContent = points.toLocaleString();
-  if ($("streak")) $("streak").textContent = streak;
+let points = Number(localStorage.getItem("nova_points") || 0);
+let bestScore = Number(localStorage.getItem("nova_best") || 0);
+let gems = Number(localStorage.getItem("nova_gems") || 0);
+let streak = Number(localStorage.getItem("nova_streak") || 0);
 
-  localStorage.setItem("nova_points", points);
-  localStorage.setItem("nova_streak", streak);
+let canvas;
+let ctx;
+let raf = 0;
+let last = 0;
+
+const game = {
+  running:false,
+  score:0,
+  crystals:0,
+  combo:1,
+  shield:1,
+  time:0,
+  spawn:0,
+  crystalSpawn:0,
+  difficulty:1,
+  player:{
+    x:0,
+    y:0,
+    targetX:0
+  },
+  meteors:[],
+  crystalsList:[],
+  particles:[],
+  stars:[]
+};
+
+
+function save(){
+
+  localStorage.setItem(
+    "nova_points",
+    points
+  );
+
+  localStorage.setItem(
+    "nova_best",
+    bestScore
+  );
+
+  localStorage.setItem(
+    "nova_gems",
+    gems
+  );
+
+  localStorage.setItem(
+    "nova_streak",
+    streak
+  );
+
 }
 
-function openGame() {
-  $("homeScreen").style.display = "none";
-  $("gameScreen").style.display = "block";
 
-  setupGame();
+function updateHome(){
+
+  $("points").textContent =
+    points.toLocaleString();
+
+  $("bestScore").textContent =
+    bestScore.toLocaleString();
+
+  $("gems").textContent =
+    gems.toLocaleString();
+
+  $("streak").textContent =
+    streak;
+
+  const xp =
+    points % 1000;
+
+  $("xpFill").style.width =
+    Math.max(5,xp/10)+"%";
+
+  $("xpText").textContent =
+    `${xp} / 1000 XP`;
+
 }
 
-function closeGame() {
+
+function showHome(){
+
   stopGame();
 
-  $("gameScreen").style.display = "none";
-  $("homeScreen").style.display = "block";
+  $("homeScreen").classList.remove("hidden");
+  $("gameScreen").classList.add("hidden");
+
 }
 
-function setupGame() {
 
-  if (!canvas) {
+function openGame(){
 
-    const arena = $("arena");
+  $("homeScreen").classList.add("hidden");
+  $("gameScreen").classList.remove("hidden");
 
-    arena.innerHTML = `
-      <canvas id="novaCanvas"></canvas>
+  initCanvas();
 
-      <div class="gameHUD">
-        <div>⭐ <span id="gameScore">0</span></div>
-        <div>💎 <span id="gameGems">0</span></div>
-        <div>🛡️ <span id="gameShield">0</span></div>
-      </div>
+}
 
-      <div id="gameStartOverlay" class="gameOverlay">
-        <div class="bigGameIcon">🚀</div>
-        <h2>NOVA SURVIVE</h2>
-        <p>Survive. Collect. Become legendary.</p>
-        <button class="primary" id="launchButton">
-          LAUNCH 🚀
-        </button>
-      </div>
 
-      <div id="gameOverOverlay" class="gameOverlay hidden">
-        <div class="bigGameIcon">💥</div>
-        <h2>MISSION FAILED</h2>
-        <p id="finalScore"></p>
-        <button class="primary" id="againButton">
-          PLAY AGAIN
-        </button>
-      </div>
-    `;
+function closeGame(){
 
-    canvas = $("novaCanvas");
-    ctx = canvas.getContext("2d");
+  stopGame();
 
-    resizeCanvas();
+  $("gameScreen").classList.add("hidden");
+  $("homeScreen").classList.remove("hidden");
 
-    window.addEventListener("resize", resizeCanvas);
+}
 
-    $("launchButton").onclick = startGame;
-    $("againButton").onclick = startGame;
 
-    canvas.addEventListener("touchmove", movePlayer, {
-      passive: false
+function openProfile(){
+
+  $("profilePoints").textContent =
+    points.toLocaleString();
+
+  $("profileBest").textContent =
+    bestScore.toLocaleString();
+
+  $("profileModal").classList.remove(
+    "hidden"
+  );
+
+}
+
+
+function closeProfile(){
+
+  $("profileModal").classList.add(
+    "hidden"
+  );
+
+}
+
+
+function comingSoon(){
+
+  if(tg?.showPopup){
+
+    tg.showPopup({
+      title:"NOVA",
+      message:"This feature is coming soon 🚀",
+      buttons:[
+        {type:"ok"}
+      ]
     });
 
-    canvas.addEventListener("mousemove", movePlayer);
+  }else{
+
+    alert(
+      "This feature is coming soon 🚀"
+    );
 
   }
 
 }
 
-function resizeCanvas() {
 
-  if (!canvas) return;
+function initCanvas(){
 
-  const rect = canvas.getBoundingClientRect();
+  if(!canvas){
 
-  canvas.width = rect.width * devicePixelRatio;
-  canvas.height = rect.height * devicePixelRatio;
+    canvas =
+      $("gameCanvas");
+
+    ctx =
+      canvas.getContext("2d");
+
+    canvas.addEventListener(
+      "pointermove",
+      pointerMove
+    );
+
+    canvas.addEventListener(
+      "pointerdown",
+      pointerMove
+    );
+
+    window.addEventListener(
+      "resize",
+      resize
+    );
+
+  }
+
+  resize();
+
+  if(
+    game.stars.length === 0
+  ){
+
+    for(let i=0;i<90;i++){
+
+      game.stars.push({
+        x:Math.random(),
+        y:Math.random(),
+        z:Math.random()
+      });
+
+    }
+
+  }
+
+}
+
+
+function resize(){
+
+  if(!canvas) return;
+
+  const rect =
+    canvas.getBoundingClientRect();
+
+  const dpr =
+    Math.min(
+      window.devicePixelRatio || 1,
+      2
+    );
+
+  canvas.width =
+    rect.width*dpr;
+
+  canvas.height =
+    rect.height*dpr;
 
   ctx.setTransform(
-    devicePixelRatio,
-    0,
-    0,
-    devicePixelRatio,
-    0,
-    0
+    dpr,0,0,dpr,0,0
   );
 
-  if (!game.running) {
+  if(!game.running){
 
-    game.playerX = rect.width / 2;
-    game.playerY = rect.height - 75;
+    game.player.x =
+      rect.width/2;
+
+    game.player.y =
+      rect.height-80;
+
+    game.player.targetX =
+      game.player.x;
 
   }
 
 }
 
-function movePlayer(e) {
 
-  if (!game.running) return;
+function pointerMove(e){
 
-  e.preventDefault();
+  if(!game.running) return;
 
-  const rect = canvas.getBoundingClientRect();
+  const rect =
+    canvas.getBoundingClientRect();
 
-  let x;
-
-  if (e.touches) {
-    x = e.touches[0].clientX - rect.left;
-  } else {
-    x = e.clientX - rect.left;
-  }
-
-  game.playerX = Math.max(
-    25,
-    Math.min(rect.width - 25, x)
-  );
+  game.player.targetX =
+    Math.max(
+      30,
+      Math.min(
+        rect.width-30,
+        e.clientX-rect.left
+      )
+    );
 
 }
 
-function startGame() {
 
-  game.running = true;
-  game.score = 0;
-  game.crystals = 0;
-  game.time = 0;
-  game.shield = 1;
-  game.combo = 0;
-  game.speed = 2;
+function startGame(){
 
-  game.rocks = [];
-  game.gems = [];
-  game.particles = [];
+  initCanvas();
 
-  $("gameStartOverlay").classList.add("hidden");
-  $("gameOverOverlay").classList.add("hidden");
+  const width =
+    canvas.clientWidth;
 
-  $("gameScore").textContent = "0";
-  $("gameGems").textContent = "0";
-  $("gameShield").textContent = "1";
+  const height =
+    canvas.clientHeight;
 
-  const rect = canvas.getBoundingClientRect();
+  game.running=true;
+  game.score=0;
+  game.crystals=0;
+  game.combo=1;
+  game.shield=1;
+  game.time=0;
+  game.spawn=0;
+  game.crystalSpawn=0;
+  game.difficulty=1;
 
-  game.playerX = rect.width / 2;
-  game.playerY = rect.height - 70;
+  game.meteors=[];
+  game.crystalsList=[];
+  game.particles=[];
 
-  lastTime = performance.now();
+  game.player.x =
+    width/2;
 
-  cancelAnimationFrame(animation);
+  game.player.targetX =
+    width/2;
 
-  animation = requestAnimationFrame(loop);
+  game.player.y =
+    height-80;
+
+  $("gameScore").textContent="0";
+  $("gameCombo").textContent="x1";
+  $("gameShield").textContent="●";
+
+  $("startOverlay").classList.add(
+    "hidden"
+  );
+
+  $("gameOver").classList.add(
+    "hidden"
+  );
+
+  last =
+    performance.now();
+
+  cancelAnimationFrame(raf);
+
+  raf =
+    requestAnimationFrame(loop);
 
 }
 
-function loop(time) {
 
-  if (!game.running) return;
+function stopGame(){
 
-  const delta = Math.min(
-    (time - lastTime) / 16.67,
-    2
-  );
+  game.running=false;
 
-  lastTime = time;
+  cancelAnimationFrame(raf);
 
-  game.time += delta / 60;
+}
 
-  game.speed = 2 + game.time * 0.035;
 
-  update(delta);
+function loop(now){
+
+  if(!game.running) return;
+
+  const dt =
+    Math.min(
+      (now-last)/16.666,
+      2
+    );
+
+  last=now;
+
+  update(dt);
 
   draw();
 
-  animation = requestAnimationFrame(loop);
+  raf =
+    requestAnimationFrame(loop);
 
 }
 
-function update(delta) {
 
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
+function update(dt){
 
-  // Meteor spawn
-  if (Math.random() < 0.018 * delta + game.time * 0.00035) {
+  const w =
+    canvas.clientWidth;
 
-    game.rocks.push({
-      x: Math.random() * width,
-      y: -40,
-      r: 12 + Math.random() * 17,
-      speed: game.speed * (0.7 + Math.random()),
-      rotation: Math.random() * Math.PI
-    });
+  const h =
+    canvas.clientHeight;
+
+  game.time +=
+    dt/60;
+
+  game.difficulty =
+    1 +
+    game.time*0.045;
+
+  // Smooth player movement
+
+  game.player.x +=
+    (
+      game.player.targetX -
+      game.player.x
+    ) *
+    0.18 *
+    dt;
+
+
+  // Meteor spawning
+
+  game.spawn -= dt;
+
+  if(game.spawn<=0){
+
+    spawnMeteor();
+
+    game.spawn =
+      Math.max(
+        11,
+        32 -
+        game.difficulty*3
+      );
 
   }
 
-  // Crystal spawn
-  if (Math.random() < 0.008 * delta) {
 
-    game.gems.push({
-      x: 25 + Math.random() * (width - 50),
-      y: -20,
-      size: 9,
-      speed: game.speed * 0.8
-    });
+  // Crystal spawning
+
+  game.crystalSpawn -= dt;
+
+  if(game.crystalSpawn<=0){
+
+    spawnCrystal();
+
+    game.crystalSpawn =
+      65;
 
   }
 
-  // Rocks
-  for (let i = game.rocks.length - 1; i >= 0; i--) {
 
-    const rock = game.rocks[i];
+  // Update meteors
 
-    rock.y += rock.speed * delta;
-    rock.rotation += 0.02 * delta;
+  for(
+    let i=game.meteors.length-1;
+    i>=0;
+    i--
+  ){
 
-    const distance = Math.hypot(
-      rock.x - game.playerX,
-      rock.y - game.playerY
-    );
+    const m =
+      game.meteors[i];
 
-    if (distance < rock.r + 18) {
+    m.y +=
+      m.speed *
+      game.difficulty *
+      dt;
 
-      if (game.shield > 0) {
+    m.rotation +=
+      m.spin*dt;
 
-        game.shield = 0;
+    const d =
+      Math.hypot(
+        m.x-game.player.x,
+        m.y-game.player.y
+      );
 
-        $("gameShield").textContent = "0";
+    if(
+      d <
+      m.radius+18
+    ){
 
-        createExplosion(
-          game.playerX,
-          game.playerY
+      if(game.shield){
+
+        game.shield=0;
+
+        $("gameShield").textContent="○";
+
+        explode(
+          game.player.x,
+          game.player.y,
+          "#5deaff",
+          22
         );
 
-        game.rocks.splice(i, 1);
+        game.meteors.splice(i,1);
 
-      } else {
+        vibrate([25,40,25]);
 
-        finishGame();
-
-        return;
+        continue;
 
       }
 
+      endGame();
+
+      return;
+
     }
 
-    if (rock.y > height + 60) {
-      game.rocks.splice(i, 1);
+    if(
+      m.y >
+      h+80
+    ){
+
+      game.meteors.splice(i,1);
+
     }
 
   }
 
-  // Crystals
-  for (let i = game.gems.length - 1; i >= 0; i--) {
 
-    const gem = game.gems[i];
+  // Update crystals
 
-    gem.y += gem.speed * delta;
+  for(
+    let i=game.crystalsList.length-1;
+    i>=0;
+    i--
+  ){
 
-    const distance = Math.hypot(
-      gem.x - game.playerX,
-      gem.y - game.playerY
-    );
+    const c =
+      game.crystalsList[i];
 
-    if (distance < 30) {
+    c.y +=
+      c.speed *
+      game.difficulty *
+      dt;
+
+    c.angle +=
+      .04*dt;
+
+    const d =
+      Math.hypot(
+        c.x-game.player.x,
+        c.y-game.player.y
+      );
+
+    if(d<34){
 
       game.crystals++;
 
-      game.score += 25;
+      gems++;
 
-      game.combo++;
+      game.combo =
+        Math.min(
+          9,
+          game.combo+1
+        );
 
-      $("gameGems").textContent =
-        game.crystals;
+      game.score +=
+        25*game.combo;
+
+      $("gameCombo").textContent =
+        "x"+game.combo;
 
       $("gameScore").textContent =
-        game.score;
+        Math.floor(
+          game.score
+        );
 
-      createExplosion(
-        gem.x,
-        gem.y
+      explode(
+        c.x,
+        c.y,
+        "#61efff",
+        14
       );
 
-      game.gems.splice(i, 1);
+      game.crystalsList.splice(i,1);
+
+      vibrate(12);
 
     }
 
-    if (gem.y > height + 30) {
-      game.gems.splice(i, 1);
+    if(c.y>h+50){
+
+      game.crystalsList.splice(i,1);
+
+      game.combo=1;
+
+      $("gameCombo").textContent="x1";
+
     }
 
   }
 
-  // Survival score
-  game.score += Math.floor(delta);
+
+  // Survival points
+
+  game.score +=
+    .12 *
+    game.difficulty *
+    dt;
 
   $("gameScore").textContent =
-    game.score;
+    Math.floor(game.score);
+
+
+  updateParticles(dt);
 
 }
 
-function draw() {
 
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
+function spawnMeteor(){
 
-  ctx.clearRect(0,0,width,height);
+  const w =
+    canvas.clientWidth;
 
-  // Space background
-  const gradient =
-    ctx.createRadialGradient(
-      width / 2,
-      height / 2,
-      20,
-      width / 2,
-      height / 2,
-      height
-    );
+  game.meteors.push({
 
-  gradient.addColorStop(0,"#17153d");
-  gradient.addColorStop(1,"#050713");
+    x:
+      25+
+      Math.random()*
+      (w-50),
 
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0,0,width,height);
+    y:-60,
 
-  // Stars
-  for(let i=0;i<45;i++){
+    radius:
+      17+
+      Math.random()*17,
 
-    const x = (i * 83) % width;
-    const y =
-      ((i * 137) +
-      game.time * 35) % height;
+    speed:
+      1.5+
+      Math.random()*1.5,
 
-    ctx.fillStyle =
-      "rgba(255,255,255,.45)";
+    rotation:
+      Math.random()*6,
 
-    ctx.fillRect(x,y,1.5,1.5);
+    spin:
+      (Math.random()-.5)*.08,
 
-  }
+    hue:
+      Math.random()
 
-  // Nebula
-  ctx.beginPath();
-
-  const nebula =
-    ctx.createRadialGradient(
-      width*.5,
-      height*.35,
-      10,
-      width*.5,
-      height*.35,
-      180
-    );
-
-  nebula.addColorStop(
-    0,
-    "rgba(100,70,255,.16)"
-  );
-
-  nebula.addColorStop(
-    1,
-    "rgba(100,70,255,0)"
-  );
-
-  ctx.fillStyle = nebula;
-
-  ctx.arc(
-    width*.5,
-    height*.35,
-    180,
-    0,
-    Math.PI*2
-  );
-
-  ctx.fill();
-
-  // Gems
-  game.gems.forEach(drawGem);
-
-  // Rocks
-  game.rocks.forEach(drawRock);
-
-  // Player
-  drawPlayer();
-
-  // Particles
-  drawParticles();
+  });
 
 }
 
-function drawPlayer() {
 
-  ctx.save();
+function spawnCrystal(){
 
-  ctx.translate(
-    game.playerX,
-    game.playerY
-  );
+  const w =
+    canvas.clientWidth;
 
-  // Engine glow
-  ctx.beginPath();
+  game.crystalsList.push({
 
-  const glow =
-    ctx.createRadialGradient(
-      0,
-      20,
-      2,
-      0,
-      20,
-      35
-    );
+    x:
+      30+
+      Math.random()*
+      (w-60),
 
-  glow.addColorStop(
-    0,
-    "rgba(0,220,255,.8)"
-  );
+    y:-30,
 
-  glow.addColorStop(
-    1,
-    "rgba(0,220,255,0)"
-  );
+    speed:
+      1.5+
 
-  ctx.fillStyle = glow;
+      Math.random(),
 
-  ctx.arc(
-    0,
-    20,
-    35,
-    0,
-    Math.PI*2
-  );
+    size:11,
 
-  ctx.fill();
+    angle:0
 
-  // Ship
-  ctx.beginPath();
-
-  ctx.moveTo(0,-25);
-  ctx.lineTo(19,20);
-  ctx.lineTo(0,13);
-  ctx.lineTo(-19,20);
-
-  ctx.closePath();
-
-  const ship =
-    ctx.createLinearGradient(
-      0,-25,
-      0,20
-    );
-
-  ship.addColorStop(
-    0,
-    "#ffffff"
-  );
-
-  ship.addColorStop(
-    .35,
-    "#78eaff"
-  );
-
-  ship.addColorStop(
-    1,
-    "#654cff"
-  );
-
-  ctx.fillStyle = ship;
-
-  ctx.shadowBlur = 20;
-  ctx.shadowColor = "#54eaff";
-
-  ctx.fill();
-
-  ctx.restore();
+  });
 
 }
 
-function drawRock(rock) {
 
-  ctx.save();
+function explode(
+  x,
+  y,
+  color,
+  amount
+){
 
-  ctx.translate(
-    rock.x,
-    rock.y
-  );
-
-  ctx.rotate(
-    rock.rotation
-  );
-
-  ctx.beginPath();
-
-  for(let i=0;i<8;i++){
+  for(
+    let i=0;
+    i<amount;
+    i++
+  ){
 
     const angle =
-      i * Math.PI / 4;
+      Math.random()*
+      Math.PI*2;
 
-    const radius =
-      rock.r *
-      (0.8 + Math.random()*.3);
-
-    const x =
-      Math.cos(angle)*radius;
-
-    const y =
-      Math.sin(angle)*radius;
-
-    if(i===0) ctx.moveTo(x,y);
-    else ctx.lineTo(x,y);
-
-  }
-
-  ctx.closePath();
-
-  const rockGradient =
-    ctx.createLinearGradient(
-      -rock.r,
-      -rock.r,
-      rock.r,
-      rock.r
-    );
-
-  rockGradient.addColorStop(
-    0,
-    "#6e7389"
-  );
-
-  rockGradient.addColorStop(
-    1,
-    "#242838"
-  );
-
-  ctx.fillStyle = rockGradient;
-
-  ctx.shadowBlur = 10;
-  ctx.shadowColor =
-    "rgba(255,80,130,.25)";
-
-  ctx.fill();
-
-  ctx.restore();
-
-}
-
-function drawGem(gem) {
-
-  ctx.save();
-
-  ctx.translate(
-    gem.x,
-    gem.y
-  );
-
-  ctx.rotate(
-    game.time * 2
-  );
-
-  ctx.beginPath();
-
-  ctx.moveTo(0,-gem.size);
-  ctx.lineTo(gem.size,0);
-  ctx.lineTo(0,gem.size);
-  ctx.lineTo(-gem.size,0);
-
-  ctx.closePath();
-
-  ctx.fillStyle="#6ff3ff";
-
-  ctx.shadowBlur=18;
-  ctx.shadowColor="#00d9ff";
-
-  ctx.fill();
-
-  ctx.restore();
-
-}
-
-function createExplosion(x,y){
-
-  for(let i=0;i<10;i++){
+    const speed =
+      1+
+      Math.random()*5;
 
     game.particles.push({
+
       x,
       y,
-      vx:(Math.random()-.5)*5,
-      vy:(Math.random()-.5)*5,
-      life:1
+
+      vx:
+        Math.cos(angle)*
+        speed,
+
+      vy:
+        Math.sin(angle)*
+        speed,
+
+      life:1,
+
+      size:
+        1+
+        Math.random()*3,
+
+      color
+
     });
 
   }
 
 }
 
-function drawParticles(){
+
+function updateParticles(dt){
 
   for(
     let i=game.particles.length-1;
@@ -637,27 +701,291 @@ function drawParticles(){
     const p =
       game.particles[i];
 
-    p.x += p.vx;
-    p.y += p.vy;
-    p.life -= .035;
+    p.x +=
+      p.vx*dt;
+
+    p.y +=
+      p.vy*dt;
+
+    p.vx *= .97;
+    p.vy *= .97;
+
+    p.life -=
+      .035*dt;
 
     if(p.life<=0){
 
       game.particles.splice(i,1);
-      continue;
 
     }
 
-    ctx.globalAlpha=p.life;
+  }
 
-    ctx.fillStyle="#7befff";
+}
+
+
+function draw(){
+
+  const w =
+    canvas.clientWidth;
+
+  const h =
+    canvas.clientHeight;
+
+  ctx.clearRect(
+    0,0,w,h
+  );
+
+
+  // Deep space
+
+  const bg =
+    ctx.createRadialGradient(
+      w*.5,
+      h*.35,
+      10,
+      w*.5,
+      h*.45,
+      h
+    );
+
+  bg.addColorStop(
+    0,
+    "#16153a"
+  );
+
+  bg.addColorStop(
+    .5,
+    "#080a1b"
+  );
+
+  bg.addColorStop(
+    1,
+    "#02030a"
+  );
+
+  ctx.fillStyle=bg;
+
+  ctx.fillRect(
+    0,0,w,h
+  );
+
+
+  drawStars(w,h);
+
+  drawNebula(w,h);
+
+  game.crystalsList.forEach(
+    drawCrystal
+  );
+
+  game.meteors.forEach(
+    drawMeteor
+  );
+
+  drawParticles();
+
+  drawShip();
+
+}
+
+
+function drawStars(w,h){
+
+  game.stars.forEach((s,i)=>{
+
+    const speed =
+      .3+
+      s.z*1.4;
+
+    s.y +=
+      .0015*
+      speed*
+      game.difficulty;
+
+    if(s.y>1)
+      s.y=0;
+
+    const x =
+      s.x*w;
+
+    const y =
+      s.y*h;
+
+    const size =
+      .4+
+      s.z*1.5;
+
+    ctx.globalAlpha =
+      .25+
+      s.z*.6;
+
+    ctx.fillStyle="#fff";
 
     ctx.beginPath();
 
     ctx.arc(
-      p.x,
-      p.y,
-      2.5,
+      x,
+      y,
+      size,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+  });
+
+  ctx.globalAlpha=1;
+
+}
+
+
+function drawNebula(w,h){
+
+  const g =
+    ctx.createRadialGradient(
+      w*.25,
+      h*.3,
+      10,
+      w*.25,
+      h*.3,
+      180
+    );
+
+  g.addColorStop(
+    0,
+    "rgba(119,83,255,.18)"
+  );
+
+  g.addColorStop(
+    1,
+    "rgba(119,83,255,0)"
+  );
+
+  ctx.fillStyle=g;
+
+  ctx.fillRect(
+    0,0,w,h
+  );
+
+}
+
+
+function drawMeteor(m){
+
+  ctx.save();
+
+  ctx.translate(
+    m.x,
+    m.y
+  );
+
+  ctx.rotate(
+    m.rotation
+  );
+
+
+  // Outer glow
+
+  ctx.shadowBlur=25;
+
+  ctx.shadowColor=
+    "rgba(255,92,78,.35)";
+
+
+  // Shape
+
+  ctx.beginPath();
+
+  const points=11;
+
+  for(
+    let i=0;
+    i<points;
+    i++
+  ){
+
+    const a =
+      i/
+      points*
+      Math.PI*2;
+
+    const r =
+      m.radius*
+      (
+        .82+
+        Math.sin(i*4.7)*.09+
+        Math.random()*.08
+      );
+
+    const x =
+      Math.cos(a)*r;
+
+    const y =
+      Math.sin(a)*r;
+
+    if(i===0)
+      ctx.moveTo(x,y);
+    else
+      ctx.lineTo(x,y);
+
+  }
+
+  ctx.closePath();
+
+
+  const rock =
+    ctx.createRadialGradient(
+      -m.radius*.3,
+      -m.radius*.35,
+      2,
+      0,
+      0,
+      m.radius
+    );
+
+  rock.addColorStop(
+    0,
+    "#c5a08f"
+  );
+
+  rock.addColorStop(
+    .45,
+    "#755f62"
+  );
+
+  rock.addColorStop(
+    1,
+    "#292936"
+  );
+
+  ctx.fillStyle=rock;
+
+  ctx.fill();
+
+
+  // Craters
+
+  ctx.shadowBlur=0;
+
+  for(let i=0;i<4;i++){
+
+    const a =
+      i*1.7;
+
+    const r =
+      m.radius*.35;
+
+    ctx.fillStyle=
+      "rgba(20,18,28,.35)";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      Math.cos(a)*r,
+      Math.sin(a)*r,
+      m.radius*.12,
       0,
       Math.PI*2
     );
@@ -666,67 +994,434 @@ function drawParticles(){
 
   }
 
-  ctx.globalAlpha=1;
+  ctx.restore();
 
 }
 
-function finishGame(){
+
+function drawCrystal(c){
+
+  ctx.save();
+
+  ctx.translate(
+    c.x,
+    c.y
+  );
+
+  ctx.rotate(
+    c.angle
+  );
+
+
+  ctx.shadowBlur=25;
+
+  ctx.shadowColor="#20eaff";
+
+
+  // Crystal
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    0,
+    -c.size*1.5
+  );
+
+  ctx.lineTo(
+    c.size,
+    -c.size*.35
+  );
+
+  ctx.lineTo(
+    c.size*.55,
+    c.size*1.2
+  );
+
+  ctx.lineTo(
+    -c.size*.55,
+    c.size*1.2
+  );
+
+  ctx.lineTo(
+    -c.size,
+    -c.size*.35
+  );
+
+  ctx.closePath();
+
+
+  const crystal =
+    ctx.createLinearGradient(
+      0,
+      -20,
+      0,
+      20
+    );
+
+  crystal.addColorStop(
+    0,
+    "#ffffff"
+  );
+
+  crystal.addColorStop(
+    .25,
+    "#a1f8ff"
+  );
+
+  crystal.addColorStop(
+    .6,
+    "#25d9ff"
+  );
+
+  crystal.addColorStop(
+    1,
+    "#5d54ff"
+  );
+
+  ctx.fillStyle=crystal;
+
+  ctx.fill();
+
+
+  // Highlight
+
+  ctx.fillStyle=
+    "rgba(255,255,255,.7)";
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    0,
+    -c.size*1.1
+  );
+
+  ctx.lineTo(
+    c.size*.35,
+    -c.size*.2
+  );
+
+  ctx.lineTo(
+    0,
+    c.size*.45
+  );
+
+  ctx.closePath();
+
+  ctx.fill();
+
+  ctx.restore();
+
+}
+
+
+function drawShip(){
+
+  const x =
+    game.player.x;
+
+  const y =
+    game.player.y;
+
+  ctx.save();
+
+  ctx.translate(x,y);
+
+
+  // Engine trail
+
+  const flame =
+    ctx.createLinearGradient(
+      0,
+      12,
+      0,
+      48
+    );
+
+  flame.addColorStop(
+    0,
+    "#ffffff"
+  );
+
+  flame.addColorStop(
+    .3,
+    "#2de7ff"
+  );
+
+  flame.addColorStop(
+    1,
+    "rgba(91,69,255,0)"
+  );
+
+  ctx.fillStyle=flame;
+
+  ctx.beginPath();
+
+  ctx.moveTo(-7,10);
+  ctx.lineTo(0,48);
+  ctx.lineTo(7,10);
+  ctx.closePath();
+
+  ctx.fill();
+
+
+  // Ship glow
+
+  ctx.shadowBlur=28;
+
+  ctx.shadowColor=
+    "#32dcff";
+
+
+  // Main hull
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    0,
+    -28
+  );
+
+  ctx.bezierCurveTo(
+    12,-14,
+    20,3,
+    15,18
+  );
+
+  ctx.lineTo(
+    0,12
+  );
+
+  ctx.lineTo(
+    -15,18
+  );
+
+  ctx.bezierCurveTo(
+    -20,3,
+    -12,-14,
+    0,-28
+  );
+
+  ctx.closePath();
+
+
+  const hull =
+    ctx.createLinearGradient(
+      0,-30,
+      0,20
+    );
+
+  hull.addColorStop(
+    0,
+    "#ffffff"
+  );
+
+  hull.addColorStop(
+    .28,
+    "#82f2ff"
+  );
+
+  hull.addColorStop(
+    .65,
+    "#6d65ff"
+  );
+
+  hull.addColorStop(
+    1,
+    "#292b73"
+  );
+
+  ctx.fillStyle=hull;
+
+  ctx.fill();
+
+
+  // Cockpit
+
+  ctx.shadowBlur=10;
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    0,
+    -7,
+    6,
+    10,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  const cockpit =
+    ctx.createLinearGradient(
+      0,-17,
+      0,3
+    );
+
+  cockpit.addColorStop(
+    0,
+    "#ffffff"
+  );
+
+  cockpit.addColorStop(
+    1,
+    "#00bce8"
+  );
+
+  ctx.fillStyle=cockpit;
+
+  ctx.fill();
+
+
+  // Wings
+
+  ctx.fillStyle="#393da2";
+
+  ctx.beginPath();
+
+  ctx.moveTo(-9,2);
+  ctx.lineTo(-26,17);
+  ctx.lineTo(-12,14);
+  ctx.closePath();
+
+  ctx.fill();
+
+  ctx.beginPath();
+
+  ctx.moveTo(9,2);
+  ctx.lineTo(26,17);
+  ctx.lineTo(12,14);
+  ctx.closePath();
+
+  ctx.fill();
+
+
+  // Shield
+
+  if(game.shield){
+
+    ctx.shadowBlur=16;
+
+    ctx.shadowColor="#36eaff";
+
+    ctx.strokeStyle=
+      "rgba(70,235,255,.5)";
+
+    ctx.lineWidth=1.5;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      0,
+      0,
+      32,
+      0,
+      Math.PI*2
+    );
+
+    ctx.stroke();
+
+  }
+
+
+  ctx.restore();
+
+}
+
+
+function drawParticles(){
+
+  game.particles.forEach(p=>{
+
+    ctx.globalAlpha =
+      Math.max(0,p.life);
+
+    ctx.fillStyle=p.color;
+
+    ctx.shadowBlur=12;
+
+    ctx.shadowColor=p.color;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      p.x,
+      p.y,
+      p.size,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+  });
+
+  ctx.globalAlpha=1;
+  ctx.shadowBlur=0;
+
+}
+
+
+function endGame(){
 
   game.running=false;
 
-  cancelAnimationFrame(animation);
+  cancelAnimationFrame(raf);
+
+  const final =
+    Math.floor(game.score);
+
+  if(final>bestScore){
+
+    bestScore=final;
+
+  }
 
   const reward =
-    Math.floor(
-      game.score * .35 +
-      game.crystals * 10
+    Math.max(
+      5,
+      Math.floor(
+        final*.12+
+        game.crystals*15
+      )
     );
 
   points += reward;
 
-  updateUI();
+  $("finalScore").textContent =
+    final.toLocaleString();
 
-  $("finalScore").innerHTML =
-    `Score: <strong>${game.score}</strong><br>
-     💎 Crystals: <strong>${game.crystals}</strong><br>
-     ✦ Reward: <strong>+${reward} NOVA Points</strong>`;
+  $("finalGems").textContent =
+    game.crystals;
 
-  $("gameOverOverlay").classList.remove(
+  $("finalReward").textContent =
+    "+"+reward;
+
+  $("gameOver").classList.remove(
     "hidden"
   );
 
+  save();
+
+  updateHome();
+
+  vibrate([
+    50,
+    50,
+    100
+  ]);
+
 }
 
-function stopGame(){
 
-  game.running=false;
+function vibrate(pattern){
 
-  cancelAnimationFrame(animation);
+  if(navigator.vibrate){
 
-}
-
-function switchTab(tab){
-
-  if(tab==="home"){
-
-    closeGame();
-
-  }
-
-  else if(tab==="games"){
-
-    openGame();
-
-  }
-
-  else{
-
-    alert(
-      "This feature is coming soon 🚀"
-    );
+    navigator.vibrate(pattern);
 
   }
 
 }
 
-updateUI();
+
+updateHome();
