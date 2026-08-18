@@ -3,512 +3,786 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NOVA Play</title>
+<title>NOVA — Play Beyond</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-* {
-  box-sizing: border-box;
+*{box-sizing:border-box}
+
+html,body{
+margin:0;
+padding:0;
+font-family:Inter,Arial,sans-serif;
+background:#050713;
+color:#fff;
+min-height:100%;
 }
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #070b18;
-  color: white;
-  min-height: 100vh;
+body{
+overflow-x:hidden;
+background:
+radial-gradient(circle at 15% 10%,rgba(115,74,255,.25),transparent 30%),
+radial-gradient(circle at 90% 20%,rgba(0,211,255,.16),transparent 28%),
+#050713;
 }
 
-.container {
-  max-width: 520px;
-  margin: auto;
-  padding: 18px;
+button{
+font-family:inherit;
+cursor:pointer;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 22px;
+.app{
+max-width:520px;
+margin:auto;
+padding:18px 16px 100px;
 }
 
-.logo {
-  font-size: 25px;
-  font-weight: 800;
+.top{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:22px;
 }
 
-.logo span {
-  color: #7c5cff;
+.brand{
+font-size:26px;
+font-weight:900;
+letter-spacing:-1px;
 }
 
-.profile {
-  background: #151b30;
-  padding: 9px 13px;
-  border-radius: 20px;
-  font-size: 13px;
+.brand span{
+background:linear-gradient(90deg,#9b6cff,#00d9ff);
+-webkit-background-clip:text;
+color:transparent;
 }
 
-.balance {
-  background: linear-gradient(135deg, #171d38, #11162a);
-  border: 1px solid #293253;
-  border-radius: 22px;
-  padding: 22px;
-  text-align: center;
-  margin-bottom: 16px;
+.avatar{
+width:42px;
+height:42px;
+border-radius:14px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(135deg,#242b52,#15192e);
+border:1px solid #343c65;
 }
 
-.balance-title {
-  color: #8d96b5;
-  font-size: 13px;
+.hero{
+position:relative;
+overflow:hidden;
+padding:24px;
+border-radius:28px;
+background:
+linear-gradient(145deg,rgba(28,35,75,.92),rgba(12,16,34,.94));
+border:1px solid rgba(125,103,255,.35);
+box-shadow:
+0 20px 60px rgba(0,0,0,.35),
+0 0 60px rgba(106,76,255,.12);
 }
 
-.points {
-  font-size: 36px;
-  font-weight: 800;
-  margin: 7px 0;
+.hero:before{
+content:"";
+position:absolute;
+width:180px;
+height:180px;
+border-radius:50%;
+background:rgba(113,77,255,.18);
+filter:blur(40px);
+right:-60px;
+top:-70px;
 }
 
-.level {
-  color: #aeb6d3;
-  font-size: 13px;
+.eyebrow{
+color:#9ca8d4;
+font-size:12px;
+letter-spacing:2px;
+font-weight:700;
 }
 
-.progress {
-  height: 7px;
-  background: #252c45;
-  border-radius: 10px;
-  margin-top: 14px;
-  overflow: hidden;
+.points{
+font-size:43px;
+font-weight:900;
+margin:7px 0 2px;
+letter-spacing:-2px;
 }
 
-.progress div {
-  width: 42%;
-  height: 100%;
-  background: linear-gradient(90deg,#7c5cff,#00d4ff);
+.points small{
+font-size:14px;
+color:#7fe5ff;
+letter-spacing:1px;
 }
 
-.stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+.levelrow{
+display:flex;
+justify-content:space-between;
+font-size:12px;
+color:#9ba5ca;
+margin-top:15px;
 }
 
-.stat {
-  background: #11162a;
-  border: 1px solid #252d48;
-  padding: 16px;
-  border-radius: 17px;
+.bar{
+height:8px;
+background:#252b4a;
+border-radius:20px;
+overflow:hidden;
+margin-top:8px;
 }
 
-.stat-title {
-  color: #8d96b5;
-  font-size: 12px;
+.bar div{
+height:100%;
+width:64%;
+background:linear-gradient(90deg,#845bff,#00d9ff);
+border-radius:20px;
+box-shadow:0 0 15px rgba(0,217,255,.5);
 }
 
-.stat-value {
-  font-size: 21px;
-  font-weight: 700;
-  margin-top: 5px;
+.play{
+width:100%;
+margin-top:20px;
+padding:18px;
+border:0;
+border-radius:18px;
+font-size:18px;
+font-weight:900;
+color:white;
+background:linear-gradient(100deg,#744cff,#4f7cff,#00cfff);
+box-shadow:0 10px 30px rgba(94,78,255,.35);
+transition:.2s;
 }
 
-.play {
-  margin-top: 16px;
-  width: 100%;
-  padding: 18px;
-  border: 0;
-  border-radius: 18px;
-  color: white;
-  font-size: 19px;
-  font-weight: 800;
-  background: linear-gradient(135deg,#7c5cff,#5b39e8);
-  box-shadow: 0 8px 25px rgba(92,62,235,.3);
+.play:active{
+transform:scale(.97);
 }
 
-.claim {
-  margin-top: 10px;
-  width: 100%;
-  padding: 15px;
-  border: 1px solid #303957;
-  border-radius: 17px;
-  background: #151b30;
-  color: white;
-  font-size: 16px;
-  font-weight: 700;
+.stats{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:9px;
+margin-top:12px;
 }
 
-.section {
-  margin-top: 22px;
-  margin-bottom: 10px;
-  font-size: 17px;
-  font-weight: 800;
+.stat{
+padding:14px 10px;
+background:rgba(15,20,42,.82);
+border:1px solid #252d4d;
+border-radius:18px;
+text-align:center;
 }
 
-.mission {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #11162a;
-  border: 1px solid #252d48;
-  padding: 15px;
-  border-radius: 15px;
-  margin-bottom: 9px;
+.stat .icon{
+font-size:20px;
 }
 
-.mission small {
-  display: block;
-  color: #8d96b5;
-  margin-top: 4px;
+.stat b{
+display:block;
+margin-top:5px;
+font-size:15px;
 }
 
-.reward {
-  color: #7cdbff;
-  font-weight: 700;
+.stat span{
+font-size:10px;
+color:#7e89ae;
 }
 
-.nav {
-  position: sticky;
-  bottom: 10px;
-  margin-top: 25px;
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 7px;
-  background: #0d1222;
-  border: 1px solid #252d48;
-  padding: 7px;
-  border-radius: 18px;
+.title{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin:24px 2px 12px;
 }
 
-.nav button {
-  border: 0;
-  background: transparent;
-  color: #8d96b5;
-  padding: 10px 3px;
-  font-size: 11px;
+.title h3{
+margin:0;
+font-size:17px;
 }
 
-.nav button:first-child {
-  color: white;
-  background: #1b2340;
-  border-radius: 12px;
+.title span{
+font-size:11px;
+color:#8290ba;
 }
 
-.game {
-  display: none;
-  text-align: center;
+.games{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:11px;
 }
 
-.game h2 {
-  margin-top: 10px;
+.game{
+position:relative;
+overflow:hidden;
+min-height:135px;
+padding:17px;
+border-radius:21px;
+border:1px solid #293252;
+background:linear-gradient(145deg,#151b36,#0d1226);
 }
 
-.game-area {
-  height: 390px;
-  background: #10162a;
-  border: 1px solid #293253;
-  border-radius: 22px;
-  position: relative;
-  overflow: hidden;
-  margin-top: 15px;
+.game:after{
+content:"";
+position:absolute;
+width:80px;
+height:80px;
+border-radius:50%;
+right:-30px;
+bottom:-30px;
+background:rgba(0,210,255,.12);
+filter:blur(10px);
 }
 
-.target {
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: linear-gradient(135deg,#00d4ff,#7c5cff);
-  position: absolute;
-  display: none;
-  box-shadow: 0 0 25px rgba(0,212,255,.45);
+.game .emoji{
+font-size:31px;
 }
 
-.timer {
-  font-size: 30px;
-  font-weight: 800;
+.game h4{
+margin:12px 0 4px;
+font-size:15px;
 }
 
-.back {
-  margin-top: 15px;
-  width: 100%;
-  padding: 14px;
-  background: #151b30;
-  border: 1px solid #303957;
-  color: white;
-  border-radius: 15px;
+.game p{
+margin:0;
+font-size:11px;
+color:#7f8bb0;
 }
 
-.hidden {
-  display: none !important;
+.badge{
+position:absolute;
+top:12px;
+right:12px;
+font-size:9px;
+padding:5px 7px;
+border-radius:8px;
+background:#252b4b;
+color:#9da9d2;
+}
+
+.missions{
+display:flex;
+flex-direction:column;
+gap:9px;
+}
+
+.mission{
+display:flex;
+align-items:center;
+gap:12px;
+padding:14px;
+border-radius:17px;
+background:#0e1429;
+border:1px solid #242c4b;
+}
+
+.missionicon{
+width:40px;
+height:40px;
+border-radius:13px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#1b2240;
+font-size:19px;
+}
+
+.missiontext{
+flex:1;
+}
+
+.missiontext b{
+font-size:13px;
+}
+
+.missiontext small{
+display:block;
+margin-top:4px;
+font-size:10px;
+color:#7783a9;
+}
+
+.reward{
+font-size:12px;
+font-weight:800;
+color:#76e5ff;
+}
+
+.nav{
+position:fixed;
+left:50%;
+bottom:12px;
+transform:translateX(-50%);
+width:min(490px,calc(100% - 24px));
+display:grid;
+grid-template-columns:repeat(4,1fr);
+padding:7px;
+gap:5px;
+border-radius:22px;
+background:rgba(10,14,29,.92);
+border:1px solid #293252;
+backdrop-filter:blur(18px);
+box-shadow:0 15px 45px rgba(0,0,0,.5);
+}
+
+.nav button{
+border:0;
+border-radius:15px;
+padding:9px 4px;
+background:transparent;
+color:#7884a8;
+font-size:10px;
+}
+
+.nav button.active{
+background:#202747;
+color:white;
+}
+
+.nav button div{
+font-size:19px;
+margin-bottom:3px;
+}
+
+/* GAME */
+
+#gameScreen{
+display:none;
+}
+
+.gameHeader{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:20px;
+}
+
+.back{
+border:1px solid #303858;
+background:#141a31;
+color:white;
+padding:10px 14px;
+border-radius:12px;
+}
+
+.timer{
+font-size:25px;
+font-weight:900;
+color:#78e5ff;
+}
+
+.arena{
+height:440px;
+border-radius:28px;
+position:relative;
+overflow:hidden;
+background:
+radial-gradient(circle at center,rgba(112,74,255,.2),transparent 40%),
+#090e20;
+border:1px solid #30385d;
+box-shadow:inset 0 0 60px rgba(74,55,180,.12);
+}
+
+.target{
+position:absolute;
+width:62px;
+height:62px;
+border-radius:50%;
+display:none;
+background:radial-gradient(circle at 35% 30%,#fff,#6ff0ff 25%,#6750ff 70%);
+box-shadow:
+0 0 20px #6ceeff,
+0 0 50px rgba(101,78,255,.8);
+animation:pulse .7s infinite alternate;
+}
+
+@keyframes pulse{
+from{transform:scale(.88)}
+to{transform:scale(1.08)}
+}
+
+.scorebox{
+text-align:center;
+margin:17px 0;
+}
+
+.scorebox span{
+color:#7e89ad;
+font-size:11px;
+letter-spacing:2px;
+}
+
+.scorebox b{
+display:block;
+font-size:34px;
+margin-top:4px;
+}
+
+.start{
+width:100%;
+padding:17px;
+border:0;
+border-radius:17px;
+background:linear-gradient(100deg,#754eff,#00cfff);
+color:white;
+font-weight:900;
+font-size:17px;
+}
+
+.result{
+display:none;
+text-align:center;
+padding:35px 20px;
+border-radius:25px;
+background:#11172d;
+border:1px solid #30395d;
+}
+
+.result .big{
+font-size:55px;
+}
+
+.result h2{
+margin:10px 0;
+}
+
+.result p{
+color:#8490b4;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
-  <div id="home">
+<div id="homeScreen">
 
-    <div class="header">
-      <div class="logo">NOVA<span>.</span></div>
-      <div class="profile">👤 PLAYER</div>
-    </div>
+<div class="top">
+<div class="brand">NOVA<span>PLAY</span></div>
+<div class="avatar">👤</div>
+</div>
 
-    <div class="balance">
-      <div class="balance-title">YOUR NOVA POINTS</div>
-      <div class="points" id="points">0</div>
-      <div class="level">LEVEL 1 • NOVICE</div>
+<div class="hero">
 
-      <div class="progress">
-        <div id="progress"></div>
-      </div>
-    </div>
+<div class="eyebrow">YOUR JOURNEY</div>
 
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-title">🔥 STREAK</div>
-        <div class="stat-value" id="streak">0 Days</div>
-      </div>
+<div class="points" id="points">0</div>
 
-      <div class="stat">
-        <div class="stat-title">🏆 RANK</div>
-        <div class="stat-value">#—</div>
-      </div>
-    </div>
+<small>✦ NOVA POINTS</small>
 
-    <button class="play" onclick="openGame()">🎮 PLAY TAP RUSH</button>
+<div class="levelrow">
+<span>LEVEL 1 • NOVICE</span>
+<span>640 / 1000 XP</span>
+</div>
 
-    <button class="claim" onclick="claimDaily()">🎁 CLAIM DAILY REWARD</button>
+<div class="bar">
+<div></div>
+</div>
 
-    <div class="section">🎯 Daily Missions</div>
-
-    <div class="mission">
-      <div>
-        🎮 Play one game
-        <small>Complete a Tap Rush game</small>
-      </div>
-      <div class="reward">+250</div>
-    </div>
-
-    <div class="mission">
-      <div>
-        🔥 Keep your streak
-        <small>Come back tomorrow</small>
-      </div>
-      <div class="reward">+100</div>
-    </div>
-
-    <div class="mission">
-      <div>
-        👥 Invite a friend
-        <small>Bring an active player</small>
-      </div>
-      <div class="reward">+500</div>
-    </div>
-
-    <div class="nav">
-      <button>🏠<br>Home</button>
-      <button onclick="openGame()">🎮<br>Games</button>
-      <button>👥<br>Friends</button>
-      <button>🏆<br>Rank</button>
-    </div>
-
-  </div>
-
-
-  <div id="game" class="game">
-
-    <div class="header">
-      <div class="logo">NOVA<span>.</span></div>
-      <div class="timer" id="timer">30</div>
-    </div>
-
-    <h2>⚡ TAP RUSH</h2>
-
-    <p>Tap the glowing target as fast as you can!</p>
-
-    <div class="game-area" id="gameArea">
-      <div class="target" id="target" onclick="hitTarget()"></div>
-    </div>
-
-    <h3>Score: <span id="score">0</span></h3>
-
-    <button class="play" id="startButton" onclick="startGame()">
-      START GAME
-    </button>
-
-    <button class="back" onclick="closeGame()">
-      ← BACK TO HOME
-    </button>
-
-  </div>
+<button class="play" onclick="openGame()">
+⚡ PLAY & EARN
+</button>
 
 </div>
+
+<div class="stats">
+
+<div class="stat">
+<div class="icon">🔥</div>
+<b id="streak">0</b>
+<span>DAY STREAK</span>
+</div>
+
+<div class="stat">
+<div class="icon">🏆</div>
+<b>#—</b>
+<span>GLOBAL RANK</span>
+</div>
+
+<div class="stat">
+<div class="icon">💎</div>
+<b>0</b>
+<span>GEMS</span>
+</div>
+
+</div>
+
+<div class="title">
+<h3>🎮 Game Center</h3>
+<span>EXPLORE ALL</span>
+</div>
+
+<div class="games">
+
+<div class="game" onclick="openGame()">
+<div class="emoji">⚡</div>
+<div class="badge">LIVE</div>
+<h4>Tap Rush</h4>
+<p>30 sec reaction challenge</p>
+</div>
+
+<div class="game">
+<div class="emoji">🧠</div>
+<div class="badge">SOON</div>
+<h4>Brain Quest</h4>
+<p>Test your knowledge</p>
+</div>
+
+<div class="game">
+<div class="emoji">🎯</div>
+<div class="badge">SOON</div>
+<h4>Perfect Shot</h4>
+<p>Hit the target</p>
+</div>
+
+<div class="game">
+<div class="emoji">🧩</div>
+<div class="badge">SOON</div>
+<h4>Memory</h4>
+<p>Remember & win</p>
+</div>
+
+</div>
+
+<div class="title">
+<h3>🎯 Daily Missions</h3>
+<span>VIEW ALL</span>
+</div>
+
+<div class="missions">
+
+<div class="mission">
+<div class="missionicon">🎮</div>
+<div class="missiontext">
+<b>Play your first game</b>
+<small>Complete one Tap Rush</small>
+</div>
+<div class="reward">+250</div>
+</div>
+
+<div class="mission">
+<div class="missionicon">🎁</div>
+<div class="missiontext">
+<b>Daily Check-in</b>
+<small>Keep your streak alive</small>
+</div>
+<div class="reward">+100</div>
+</div>
+
+<div class="mission">
+<div class="missionicon">👥</div>
+<div class="missiontext">
+<b>Invite a friend</b>
+<small>Bring a new active player</small>
+</div>
+<div class="reward">+500</div>
+</div>
+
+</div>
+
+</div>
+
+
+<div id="gameScreen">
+
+<div class="gameHeader">
+
+<button class="back" onclick="closeGame()">← Back</button>
+
+<div class="timer" id="timer">30</div>
+
+</div>
+
+<div class="title">
+<h3>⚡ TAP RUSH</h3>
+<span>30 SECOND CHALLENGE</span>
+</div>
+
+<div class="arena" id="arena">
+<div class="target" id="target" onclick="hit()"></div>
+</div>
+
+<div class="scorebox">
+<span>SCORE</span>
+<b id="score">0</b>
+</div>
+
+<button class="start" id="start" onclick="startGame()">
+START GAME
+</button>
+
+<div class="result" id="result">
+<div class="big">🏆</div>
+<h2>ROUND COMPLETE</h2>
+<p id="resultText"></p>
+<button class="start" onclick="startGame()">PLAY AGAIN</button>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="nav">
+
+<button class="active">
+<div>🏠</div>
+HOME
+</button>
+
+<button onclick="openGame()">
+<div>🎮</div>
+GAMES
+</button>
+
+<button>
+<div>👥</div>
+FRIENDS
+</button>
+
+<button>
+<div>🏆</div>
+RANK
+</button>
+
+</div>
+
 
 <script>
 
 const tg = window.Telegram.WebApp;
 
-try {
-  tg.ready();
-  tg.expand();
-} catch(e) {}
+try{
+tg.ready();
+tg.expand();
+}catch(e){}
 
 let points = Number(localStorage.getItem("nova_points") || 0);
 let streak = Number(localStorage.getItem("nova_streak") || 0);
 
-let gameRunning = false;
-let score = 0;
-let timeLeft = 30;
-let timerInterval;
+let running=false;
+let score=0;
+let time=30;
+let interval;
 
-function updateUI() {
-  document.getElementById("points").innerText =
-    points.toLocaleString();
+const pointsEl=document.getElementById("points");
+const streakEl=document.getElementById("streak");
+const target=document.getElementById("target");
+const arena=document.getElementById("arena");
 
-  document.getElementById("streak").innerText =
-    streak + " Days";
+function update(){
 
-  let progress = Math.min((points % 1000) / 10, 100);
+pointsEl.innerText=points.toLocaleString();
+streakEl.innerText=streak;
 
-  document.getElementById("progress").style.width =
-    progress + "%";
+localStorage.setItem("nova_points",points);
+localStorage.setItem("nova_streak",streak);
+
 }
 
-function save() {
-  localStorage.setItem("nova_points", points);
-  localStorage.setItem("nova_streak", streak);
+function openGame(){
+
+document.getElementById("homeScreen").style.display="none";
+document.getElementById("gameScreen").style.display="block";
+
 }
 
-function claimDaily() {
+function closeGame(){
 
-  let today = new Date().toDateString();
-  let lastClaim = localStorage.getItem("nova_last_claim");
+stop();
 
-  if(lastClaim === today) {
-    alert("🎁 You already claimed today's reward!");
-    return;
-  }
+document.getElementById("gameScreen").style.display="none";
+document.getElementById("homeScreen").style.display="block";
 
-  points += 100;
-  streak += 1;
-
-  localStorage.setItem("nova_last_claim", today);
-
-  save();
-  updateUI();
-
-  alert("🎉 +100 NOVA Points!");
 }
 
-function openGame() {
-  document.getElementById("home").classList.add("hidden");
-  document.getElementById("game").style.display = "block";
+function startGame(){
+
+if(running)return;
+
+running=true;
+score=0;
+time=30;
+
+document.getElementById("score").innerText=0;
+document.getElementById("timer").innerText=30;
+
+document.getElementById("start").style.display="none";
+document.getElementById("result").style.display="none";
+
+move();
+
+interval=setInterval(()=>{
+
+time--;
+
+document.getElementById("timer").innerText=time;
+
+if(time<=0){
+finish();
 }
 
-function closeGame() {
-  stopGame();
+},1000);
 
-  document.getElementById("game").style.display = "none";
-  document.getElementById("home").classList.remove("hidden");
-
-  updateUI();
 }
 
-function startGame() {
+function move(){
 
-  if(gameRunning) return;
+if(!running)return;
 
-  gameRunning = true;
-  score = 0;
-  timeLeft = 30;
+let maxX=arena.clientWidth-62;
+let maxY=arena.clientHeight-62;
 
-  document.getElementById("score").innerText = score;
-  document.getElementById("timer").innerText = timeLeft;
-  document.getElementById("startButton").innerText = "GAME RUNNING...";
+let x=Math.random()*maxX;
+let y=Math.random()*maxY;
 
-  moveTarget();
+target.style.left=x+"px";
+target.style.top=y+"px";
+target.style.display="block";
 
-  timerInterval = setInterval(() => {
-
-    timeLeft--;
-
-    document.getElementById("timer").innerText =
-      timeLeft;
-
-    if(timeLeft <= 0) {
-      finishGame();
-    }
-
-  },1000);
 }
 
-function moveTarget() {
+function hit(){
 
-  if(!gameRunning) return;
+if(!running)return;
 
-  const area = document.getElementById("gameArea");
-  const target = document.getElementById("target");
+score++;
 
-  const maxX = area.clientWidth - 58;
-  const maxY = area.clientHeight - 58;
+document.getElementById("score").innerText=score;
 
-  const x = Math.random() * maxX;
-  const y = Math.random() * maxY;
+move();
 
-  target.style.left = x + "px";
-  target.style.top = y + "px";
-  target.style.display = "block";
 }
 
-function hitTarget() {
+function finish(){
 
-  if(!gameRunning) return;
+stop();
 
-  score++;
+let reward=score*3;
 
-  document.getElementById("score").innerText =
-    score;
+points+=reward;
 
-  moveTarget();
+update();
+
+document.getElementById("resultText").innerText=
+"Score: "+score+"  •  Reward: +"+reward+" NOVA Points";
+
+document.getElementById("result").style.display="block";
+
 }
 
-function finishGame() {
+function stop(){
 
-  stopGame();
+running=false;
 
-  let reward = score * 2;
+clearInterval(interval);
 
-  points += reward;
+target.style.display="none";
 
-  save();
-  updateUI();
+document.getElementById("start").style.display="block";
 
-  alert(
-    "🏁 GAME OVER!\n\n" +
-    "Score: " + score +
-    "\n" +
-    "Reward: +" + reward + " NOVA Points"
-  );
+document.getElementById("start").innerText="START GAME";
 
-  document.getElementById("startButton").innerText =
-    "PLAY AGAIN";
 }
 
-function stopGame() {
-
-  gameRunning = false;
-
-  clearInterval(timerInterval);
-
-  document.getElementById("target").style.display =
-    "none";
-
-  document.getElementById("startButton").innerText =
-    "START GAME";
-}
-
-updateUI();
+update();
 
 </script>
 
