@@ -1,21 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NOVA</title>
-</head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#050712">
+<title>NOVA — Play World</title>
 
-<body style="margin:0;background:#050711;color:white;font-family:Arial;text-align:center">
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
 
-<div style="padding-top:120px">
-<h1 style="font-size:60px;color:#4eeaff">NOVA</h1>
-<p>THE SYSTEM IS ONLINE</p>
+html{
+  scroll-behavior:smooth;
+}
 
-<button onclick="alert('WORKING!')"
-style="padding:15px 30px;border:0;border-radius:12px;background:#4eeaff">
-PLAY
-</button>
-</div>
+body{
+  min-height:100vh;
+  background:#050712;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+  overflow-x:hidden;
+}
 
-</body>
-</html>
+/* SPACE BACKGROUND */
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background:
+    radial-gradient(circle at 75% 15%,#5b4cff25,transparent 30%),
+    radial-gradient(circle at 15% 65%,#00d9ff18,transparent 28%),
+    linear-gradient(135deg,#050712,#090d1d 55%,#03050c);
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  opacity:.25;
+  background-image:
+    radial-gradient(circle,#ffffff 1px,transparent 1px);
+  background-size:80px 80px;
+}
+
+/* HEADER */
+
+header{
+  width:min(1180px,calc(100% - 30px));
+  height:78px;
+  margin:auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.logo{
+  font-size:24px;
+  font-weight:900;
+  letter-spacing:6px;
+}
+
+.logo span{
+  color:#51eaff;
+}
+
+.status{
+  color:#68738c;
+  font-size:9px;
+  letter-spacing:2px;
+}
+
+.status i{
+  display:inline-block;
+  width:6px;
+  height:6px;
+  margin-right:7px;
+  border-radius:50%;
+  background:#4cffaa;
+  box-shadow:0 0 15px #4cffaa;
+}
+
+/* MAIN */
+
+main{
+  width:min(1180px,calc(100% - 30px));
+  margin:auto;
+  padding-bottom:120px;
+}
+
+.page{
+  animation:show .4s ease;
+}
+
+.hidden{
+  display:none!important;
+}
+
+@keyframes show{
+  from{
+    opacity:0;
+    transform:translateY(10px);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+/* HERO */
+
+.hero{
+  min-height:570px;
+  padding:65px;
+  position:relative;
+  overflow:hidden;
+  border:1px solid #252d47;
+  border-radius:32px;
+  background:
+    radial-gradient(circle at 75% 35%,#554aff55,transparent 18%),
+    radial-gradient(circle at 70% 75%,#00d9ff18,transparent 28%),
+    linear-gradient(135deg,#10162b,#070a15);
+  box-shadow:0 30px 100px #0008;
+}
+
+.hero::after{
+  content:"";
+  position:absolute;
+  width:420px;
+  height:420px;
+  right:-170px;
+  top:-130px;
+  border:1px solid #ffffff12;
+  border-radius:50%;
+  box-shadow:
+    0 0 100px #6157ff22,
+    inset 0 0 80px #4eeaff08;
+}
+
+.hero-label{
+  color:#51eaff;
+  font-size:9px;
+  font-weight:bold;
+  letter-spacing:3px;
+}
+
+.hero h1{
+  margin-top:24px;
+  font-size:clamp(65px,10vw,120px);
+  line-height:.8;
+  letter-spacing:-8px;
+}
+
+.hero h1 span{
+  color:#51eaff;
+  text-shadow:0 0 45px #51eaff44;
+}
+
+.hero p{
+  max-width:500px;
+  margin-top:32px;
+  color:#7d89a5;
+  font-size:13px;
+  line-height:1.8;
+}
+
+.primary{
+  margin-top:32px;
+  padding:16px 23px;
+  border:0;
+  border-radius:14px;
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  background:linear-gradient(100
