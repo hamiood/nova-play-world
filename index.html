@@ -2,186 +2,1148 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#050712">
+<meta name="description" content="NOVA — Play World">
 <title>NOVA — Play World</title>
 
 <style>
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-margin:0;
-background:#050712;
-color:#f7fbff;
-font:14px Inter,Arial,sans-serif;
-overflow-x:hidden
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
 }
-button,a{font:inherit}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  min-height:100vh;
+  background:#050712;
+  color:#f7fbff;
+  font-family:Arial,Helvetica,sans-serif;
+  overflow-x:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+
+button{
+  font:inherit;
+  border:0;
+  cursor:pointer;
+}
+
+button:active{
+  transform:scale(.97);
+}
+
+/* BACKGROUND */
+
+.bg{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background:
+    radial-gradient(circle at 15% 15%,#654cff22,transparent 30%),
+    radial-gradient(circle at 85% 75%,#00e5ff18,transparent 30%),
+    #050712;
+}
 
 .stars{
-position:fixed;
-inset:0;
-z-index:-1;
-background:
-radial-gradient(circle at 20% 20%,#fff 0 1px,transparent 1px),
-radial-gradient(circle at 70% 35%,#fff 0 1px,transparent 1px),
-radial-gradient(circle at 45% 80%,#fff 0 1px,transparent 1px);
-background-size:170px 190px,230px 260px,300px 330px;
-opacity:.28
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  opacity:.35;
+  background-image:
+    radial-gradient(#ffffff 1px,transparent 1px),
+    radial-gradient(#7df9ff 1px,transparent 1px);
+  background-size:120px 120px,190px 190px;
+  background-position:20px 30px,70px 80px;
+  animation:starsMove 20s linear infinite;
 }
 
-header{
-width:min(1180px,calc(100% - 30px));
-height:78px;
-margin:auto;
-display:flex;
-align-items:center;
-justify-content:space-between
+@keyframes starsMove{
+  from{
+    background-position:20px 30px,70px 80px;
+  }
+  to{
+    background-position:300px 300px,420px 420px;
+  }
 }
 
-.brand{
-color:#fff;
-text-decoration:none;
-font-size:24px;
-font-weight:900;
-letter-spacing:6px
+/* APP */
+
+.app{
+  width:min(1100px,100%);
+  margin:auto;
+  padding:18px 15px 110px;
 }
 
-.brand span,.eyebrow,.tag{color:#55eaff}
+/* HEADER */
 
-.status{
-font-size:9px;
-letter-spacing:2px;
-color:#74809b
+.top{
+  height:55px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:18px;
 }
 
-main{
-width:min(1180px,calc(100% - 30px));
-margin:auto;
-padding-bottom:120px
+.logo{
+  color:#ffffff;
+  font-size:25px;
+  font-weight:900;
+  letter-spacing:6px;
 }
 
-.page{
-display:none;
-animation:enter .4s ease
+.logo span{
+  color:#55eaff;
 }
 
-.page.active{display:block}
-
-@keyframes enter{
-from{opacity:0;transform:translateY(10px)}
-to{opacity:1;transform:none}
+.wallet{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:9px 13px;
+  border-radius:14px;
+  background:#ffffff0b;
+  border:1px solid #ffffff15;
+  color:#9defff;
+  font-size:12px;
+  font-weight:700;
 }
+
+/* SCREENS */
+
+.screen{
+  display:none;
+  animation:screenIn .35s ease;
+}
+
+.screen.active{
+  display:block;
+}
+
+@keyframes screenIn{
+  from{
+    opacity:0;
+    transform:translateY(10px);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+/* HERO */
 
 .hero{
-min-height:590px;
-border:1px solid #28314b;
-border-radius:32px;
-padding:70px;
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:30px;
-overflow:hidden;
-position:relative;
-background:
-radial-gradient(circle at 72% 48%,#6158ff38,transparent 20%),
-linear-gradient(135deg,#10162a,#070a15);
-box-shadow:0 30px 100px #0008
+  min-height:520px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:25px;
+  align-items:center;
+  padding:35px;
+  border:1px solid #27304a;
+  border-radius:30px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 75% 50%,#6655ff30,transparent 27%),
+    linear-gradient(145deg,#11182c,#070914);
+  box-shadow:0 25px 90px #0009;
 }
 
-.hero h1{
-font-size:clamp(58px,8vw,106px);
-line-height:.84;
-letter-spacing:-7px;
-margin:20px 0
+.small{
+  color:#55eaff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:3px;
 }
 
-.hero h1 span{
-color:#55eaff;
-text-shadow:0 0 40px #55eaff44
+h1{
+  margin:16px 0;
+  font-size:clamp(55px,10vw,105px);
+  line-height:.82;
+  letter-spacing:-6px;
 }
 
-.lead{
-max-width:510px;
-color:#8591ac;
-line-height:1.8
+h1 span{
+  color:#55eaff;
+  text-shadow:0 0 35px #55eaff66;
 }
 
-.eyebrow{
-font-size:9px;
-letter-spacing:3px;
-font-weight:800
+.desc{
+  max-width:470px;
+  color:#8995ae;
+  line-height:1.8;
+  font-size:14px;
 }
+
+/* BUTTONS */
 
 .actions{
-display:flex;
-gap:12px;
-flex-wrap:wrap;
-margin-top:28px
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:26px;
 }
 
 .btn{
-border:0;
-border-radius:13px;
-padding:14px 19px;
-font-weight:800;
-font-size:11px;
-cursor:pointer
+  padding:14px 18px;
+  border-radius:14px;
+  font-size:12px;
+  font-weight:800;
 }
 
-.btn b{
-margin-left:16px;
-font-size:17px
+.play{
+  color:#ffffff;
+  background:linear-gradient(100deg,#6c55ff,#3ce8ff);
+  box-shadow:0 15px 40px #42e5f533;
 }
 
-.primary{
-color:#fff;
-background:linear-gradient(100deg,#6b57ff,#42e5f5);
-box-shadow:0 15px 40px #4c5aff33
+.secondary{
+  color:#b7c2db;
+  background:#ffffff09;
+  border:1px solid #2b3652;
 }
 
-.ghost{
-color:#b9c5df;
-background:#ffffff08;
-border:1px solid #2b3652
-}
+/* SPACE SCENE */
 
 .scene{
-min-height:430px;
-position:relative;
-display:grid;
-place-items:center
+  position:relative;
+  height:410px;
+  display:grid;
+  place-items:center;
 }
 
 .planet{
-width:210px;
-height:210px;
-border-radius:50%;
-background:
-radial-gradient(circle at 30% 25%,#fff,#7d77e0 35%,#15162f 75%);
-box-shadow:0 0 100px #635cff77
+  width:190px;
+  height:190px;
+  border-radius:50%;
+  background:
+    radial-gradient(
+      circle at 30% 25%,
+      #ffffff 0%,
+      #8a83ff 25%,
+      #302b73 55%,
+      #090a19 78%
+    );
+  box-shadow:
+    0 0 35px #6c5cff,
+    0 0 110px #6c5cff55;
 }
 
 .orbit{
-position:absolute;
-border:1px solid #55eaff44;
-border-radius:50%
+  position:absolute;
+  border:1px solid #55eaff44;
+  border-radius:50%;
 }
 
-.orbit.a{
-width:470px;
-height:135px;
-transform:rotate(-18deg)
+.o1{
+  width:390px;
+  height:125px;
+  transform:rotate(-18deg);
 }
 
-.orbit.b{
-width:350px;
-height:350px;
-border-color:#725dff33
+.o2{
+  width:310px;
+  height:310px;
+  border-color:#795cff33;
 }
 
 .ship{
-position:absolute;
-font-size:58px;
-color:#eaffff;
-filter:drop-shadow(0 0 22
+  position:absolute;
+  font-size:48px;
+  filter:drop-shadow(0 0 20px #55eaff88);
+  animation:shipFloat 3s ease-in-out infinite;
+}
+
+@keyframes shipFloat{
+  0%,100%{
+    transform:translateY(0) rotate(0);
+  }
+  50%{
+    transform:translateY(-15px) rotate(-5deg);
+  }
+} 
+/* FEATURE CARDS */
+
+.features{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-top:20px;
+}
+
+.card{
+  padding:22px;
+  border-radius:20px;
+  background:#ffffff08;
+  border:1px solid #ffffff12;
+  transition:transform .2s ease,border-color .2s ease;
+}
+
+.card:hover{
+  transform:translateY(-4px);
+  border-color:#55eaff44;
+}
+
+.card:active{
+  transform:scale(.98);
+}
+
+.icon{
+  font-size:30px;
+  margin-bottom:12px;
+}
+
+.card h3{
+  margin:0 0 8px;
+  font-size:16px;
+}
+
+.card p{
+  margin:0;
+  color:#7f8aa3;
+  font-size:12px;
+  line-height:1.6;
+}
+
+/* GAME */
+
+.game{
+  margin-top:20px;
+  padding:28px 20px;
+  text-align:center;
+  border:1px solid #27304a;
+  border-radius:25px;
+  background:
+    radial-gradient(circle at 50% 0%,#6655ff20,transparent 35%),
+    #0c1020;
+  box-shadow:0 20px 70px #0008;
+}
+
+.game h2{
+  margin:10px 0;
+  font-size:26px;
+}
+
+.muted{
+  color:#7e8aa4;
+  font-size:12px;
+  line-height:1.7;
+}
+
+.score{
+  margin:20px 0;
+  color:#55eaff;
+  font-size:52px;
+  font-weight:900;
+  text-shadow:0 0 30px #55eaff44;
+}
+
+.tap{
+  width:155px;
+  height:155px;
+  border-radius:50%;
+  color:#ffffff;
+  background:
+    radial-gradient(circle at 35% 30%,#ffffff,#55eaff 18%,#6355ff 65%,#251d63);
+  box-shadow:
+    0 0 30px #55eaff66,
+    0 0 80px #6355ff44;
+  font-size:22px;
+  font-weight:900;
+  transition:transform .08s ease;
+}
+
+.tap:active{
+  transform:scale(.91);
+}
+
+/* REWARD */
+
+.reward{
+  margin-top:18px;
+  padding:22px;
+  border:1px solid #293354;
+  border-radius:20px;
+  background:
+    linear-gradient(135deg,#171d38,#0b1020);
+}
+
+.reward-value{
+  margin:15px 0;
+  color:#55eaff;
+  font-size:38px;
+  font-weight:900;
+}
+
+/* PROFILE */
+
+.profile{
+  padding:35px 20px;
+  text-align:center;
+}
+
+.avatar{
+  width:90px;
+  height:90px;
+  margin:0 auto 18px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:linear-gradient(135deg,#6c55ff,#55eaff);
+  box-shadow:0 0 50px #55eaff44;
+  font-size:38px;
+}
+
+.profile-name{
+  margin:0 0 6px;
+  font-size:24px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:20px;
+}
+
+.stat{
+  padding:18px;
+  border-radius:17px;
+  background:#ffffff08;
+  border:1px solid #ffffff12;
+}
+
+.stat-value{
+  margin-top:6px;
+  color:#55eaff;
+  font-size:25px;
+  font-weight:900;
+}
+
+/* BOTTOM NAV */
+
+.bottom{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:20;
+  padding:10px 15px calc(10px + env(safe-area-inset-bottom));
+  background:#050712dd;
+  border-top:1px solid #ffffff10;
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+.nav{
+  width:min(600px,100%);
+  margin:auto;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+}
+
+.nav button{
+  padding:9px 4px;
+  border-radius:13px;
+  color:#69758e;
+  background:transparent;
+  font-size:10px;
+  line-height:1.5;
+}
+
+.nav button.active{
+  color:#55eaff;
+  background:#55eaff0c;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:700px){
+
+  .hero{
+    grid-template-columns:1fr;
+    min-height:auto;
+    padding:28px 20px;
+  }
+
+  .scene{
+    height:300px;
+  }
+
+  .planet{
+    width:145px;
+    height:145px;
+  }
+
+  .o1{
+    width:300px;
+    height:100px;
+  }
+
+  .o2{
+    width:240px;
+    height:240px;
+  }
+
+  .features{
+    grid-template-columns:1fr;
+  }
+
+  h1{
+    letter-spacing:-4px;
+  }
+
+}
+
+@media(max-width:380px){
+
+  .app{
+    padding-left:10px;
+    padding-right:10px;
+  }
+
+  .hero{
+    padding:24px 16px;
+  }
+
+  .tap{
+    width:135px;
+    height:135px;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="bg"></div>
+<div class="stars"></div>
+
+<div class="app">
+
+<header class="top">
+
+  <div class="logo">
+    NO<span>VA</span>
+  </div>
+
+  <div class="wallet">
+    🪙 <span id="coins">0</span>
+  </div>
+
+</header>
+
+<!-- HOME -->
+
+<section id="home" class="screen active">
+
+  <div class="hero">
+
+    <div>
+
+      <div class="small">
+        WELCOME TO THE PLAY WORLD
+      </div>
+
+      <h1>
+        PLAY.<br>
+        <span>WIN.</span>
+      </h1>
+
+      <p class="desc">
+        Welcome to NOVA — a futuristic mini game
+        universe where you can play quick games,
+        collect coins and build your score.
+      </p>
+
+      <div class="actions">
+
+        <button
+          class="btn play"
+          onclick="openGame()">
+          START PLAYING
+        </button>
+
+        <button
+          class="btn secondary"
+          onclick="showScreen('rewards')">
+          DAILY REWARD
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="scene">
+
+      <div class="orbit o1"></div>
+      <div class="orbit o2"></div>
+
+      <div class="planet"></div>
+
+      <div class="ship">
+        🚀
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="features">
+
+    <div
+      class="card"
+      onclick="openGame()">
+
+      <div class="icon">🎮</div>
+
+      <h3>Quick Tap</h3>
+
+      <p>
+        Tap the NOVA core and collect coins.
+      </p>
+
+    </div>
+
+    <div
+      class="card"
+      onclick="showScreen('rewards')">
+
+      <div class="icon">🎁</div>
+
+      <h3>Daily Reward</h3>
+
+      <p>
+        Return every day and claim your bonus.
+      </p>
+
+    </div>
+
+    <div
+      class="card"
+      onclick="showScreen('profile')">
+
+      <div class="icon">👤</div>
+
+      <h3>Profile</h3>
+
+      <p>
+        Check your player stats and balance.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+<!-- GAMES -->
+
+<section id="games" class="screen">
+
+  <div class="game">
+
+    <div class="small">
+      NOVA ARCADE
+    </div>
+
+    <h2>⚡ QUICK TAP</h2>
+
+    <p class="muted">
+      Tap the NOVA core and collect coins.
+      Every tap increases your score.
+    </p>
+
+    <div
+      class="score"
+      id="score">
+      0
+    </div>
+
+    <button
+      class="tap"
+      id="tapButton"
+      onclick="tapCore()">
+      TAP
+    </button>
+
+    <p class="muted" style="margin-top:20px">
+      Best Score:
+      <strong id="best">0</strong>
+    </p>
+
+  </div>
+
+</section>
+
+
+<!-- DAILY REWARD -->
+
+<section id="rewards" class="screen">
+
+  <div class="game">
+
+    <div class="small">
+      DAILY SYSTEM
+    </div>
+
+    <h2>🎁 DAILY REWARD</h2>
+
+    <div class="reward">
+
+      <p class="muted">
+        Your daily NOVA bonus
+      </p>
+
+      <div class="reward-value">
+        +50 🪙
+      </div>
+
+      <button
+        class="btn play"
+        id="claimBtn"
+        onclick="claimReward()">
+        CLAIM REWARD
+      </button>
+
+      <p
+        id="rewardMsg"
+        class="muted"
+        style="margin-top:15px">
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- PROFILE -->
+
+<section id="profile" class="screen">
+
+  <div class="game profile">
+
+    <div class="avatar">
+      🚀
+    </div>
+
+    <h2
+      class="profile-name"
+      id="username">
+      NOVA PLAYER
+    </h2>
+
+    <p class="muted">
+      Telegram Mini App Player
+    </p>
+
+    <div class="stats">
+
+      <div class="stat">
+
+        <div class="muted">
+          🪙 COINS
+        </div>
+
+        <div
+          class="stat-value"
+          id="profileCoins">
+          0
+        </div>
+
+      </div>
+
+      <div class="stat">
+
+        <div class="muted">
+          🏆 BEST
+        </div>
+
+        <div
+          class="stat-value"
+          id="profileBest">
+          0
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+</div>
+
+
+<!-- BOTTOM NAVIGATION -->
+
+<div class="bottom">
+
+  <nav class="nav">
+
+    <button
+      class="active"
+      data-screen="home"
+      onclick="showScreen('home')">
+      🏠<br>
+      HOME
+    </button>
+
+    <button
+      data-screen="games"
+      onclick="showScreen('games')">
+      🎮<br>
+      PLAY
+    </button>
+
+    <button
+      data-screen="rewards"
+      onclick="showScreen('rewards')">
+      🎁<br>
+      REWARD
+    </button>
+
+    <button
+      data-screen="profile"
+      onclick="showScreen('profile')">
+      👤<br>
+      PROFILE
+    </button>
+
+  </nav>
+
+</div>
+
+
+<script>
+
+/* =========================
+   NOVA DATA
+========================= */
+
+let coins = Number(
+  localStorage.getItem("novaCoins") || 0
+);
+
+let best = Number(
+  localStorage.getItem("novaBest") || 0
+);
+
+let score = 0;
+
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const coinsEl =
+  document.getElementById("coins");
+
+const scoreEl =
+  document.getElementById("score");
+
+const bestEl =
+  document.getElementById("best");
+
+const profileCoins =
+  document.getElementById("profileCoins");
+
+const profileBest =
+  document.getElementById("profileBest");
+
+
+/* =========================
+   UPDATE UI
+========================= */
+
+function updateUI(){
+
+  if(coinsEl){
+    coinsEl.textContent = coins;
+  }
+
+  if(scoreEl){
+    scoreEl.textContent = score;
+  }
+
+  if(bestEl){
+    bestEl.textContent = best;
+  }
+
+  if(profileCoins){
+    profileCoins.textContent = coins;
+  }
+
+  if(profileBest){
+    profileBest.textContent = best;
+  }
+
+  localStorage.setItem(
+    "novaCoins",
+    String(coins)
+  );
+
+  localStorage.setItem(
+    "novaBest",
+    String(best)
+  );
+
+}
+
+
+/* =========================
+   SCREEN SYSTEM
+========================= */
+
+function showScreen(id){
+
+  document
+    .querySelectorAll(".screen")
+    .forEach(function(screen){
+
+      screen.classList.remove("active");
+
+    });
+
+
+  const target =
+    document.getElementById(id);
+
+
+  if(target){
+
+    target.classList.add("active");
+
+  }
+
+
+  document
+    .querySelectorAll(".nav button")
+    .forEach(function(button){
+
+      button.classList.toggle(
+        "active",
+        button.dataset.screen === id
+      );
+
+    });
+
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+/* =========================
+   START GAME
+========================= */
+
+function openGame(){
+
+  score = 0;
+
+  updateUI();
+
+  showScreen("games");
+
+}
+
+
+/* =========================
+   TAP GAME
+========================= */
+
+function tapCore(){
+
+  score += 1;
+
+  coins += 1;
+
+
+  if(score > best){
+
+    best = score;
+
+  }
+
+
+  updateUI();
+
+}
+
+
+/* =========================
+   DAILY REWARD
+========================= */
+
+function claimReward(){
+
+  const today =
+    new Date().toISOString().slice(0,10);
+
+  const claimed =
+    localStorage.getItem("novaReward");
+
+
+  const button =
+    document.getElementById("claimBtn");
+
+  const message =
+    document.getElementById("rewardMsg");
+
+
+  if(claimed === today){
+
+    if(message){
+
+      message.textContent =
+        "Reward already claimed today.";
+
+    }
+
+    if(button){
+
+      button.textContent =
+        "ALREADY CLAIMED";
+
+    }
+
+    return;
+
+  }
+
+
+  coins += 50;
+
+  localStorage.setItem(
+    "novaReward",
+    today
+  );
+
+
+  if(message){
+
+    message.textContent =
+      "Reward claimed! +50 coins.";
+
+  }
+
+  if(button){
+
+    button.textContent =
+      "CLAIMED ✓";
+
+  }
+
+
+  updateUI();
+
+}/* =========================
+   TELEGRAM MINI APP
+========================= */
+
+function initTelegram(){
+
+  try{
+
+    if(
+      window.Telegram &&
+      window.Telegram.WebApp
+    ){
+
+      const tg =
+        window.Telegram.WebApp;
+
+      tg.ready();
+
+      tg.expand();
+
+
+      const user =
+        tg.initDataUnsafe &&
+        tg.initDataUnsafe.user;
+
+
+      if(user){
+
+        const name =
+          user.first_name ||
+          user.username ||
+          "NOVA PLAYER";
+
+        const username =
+          document.getElementById(
+            "username"
+          );
+
+        if(username){
+
+          username.textContent = name;
+
+        }
+
+      }
+
+    }
+
+  }catch(error){
+
+    console.log(
+      "Telegram WebApp unavailable",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================
+   PREVENT DOUBLE TAP
+========================= */
+
+let lastTap = 0;
+
+document.addEventListener(
+  "touchend",
+  function(){
+
+    const now = Date.now();
+
+    if(now - lastTap < 40){
+
+      return;
+
+    }
+
+    lastTap = now;
+
+  },
+  {passive:true}
+);
+
+
+/* =========================
+   NOVA STARTUP
+========================= */
+
+updateUI();
+
+initTelegram();
+
+</script>
+
+</body>
+</html>
